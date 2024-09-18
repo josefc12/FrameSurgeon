@@ -12,6 +12,7 @@
           "Avalonia.Desktop": "11.0.10",
           "Avalonia.Diagnostics": "11.0.10",
           "Avalonia.Fonts.Inter": "11.0.10",
+          "Avalonia.Markup.Xaml.Loader": "11.0.10",
           "Avalonia.ReactiveUI": "11.0.10",
           "Avalonia.Themes.Fluent": "11.0.10"
         },
@@ -162,6 +163,18 @@
         },
         "runtime": {
           "lib/net6.0/Avalonia.FreeDesktop.dll": {
+            "assemblyVersion": "11.0.10.0",
+            "fileVersion": "11.0.10.0"
+          }
+        }
+      },
+      "Avalonia.Markup.Xaml.Loader/11.0.10": {
+        "dependencies": {
+          "Avalonia": "11.0.10",
+          "System.Reflection.Emit": "4.3.0"
+        },
+        "runtime": {
+          "lib/net6.0/Avalonia.Markup.Xaml.Loader.dll": {
             "assemblyVersion": "11.0.10.0",
             "fileVersion": "11.0.10.0"
           }
@@ -996,6 +1009,13 @@
       "sha512": "sha512-QLVn1pjCe5ez4cH5B+NmhT61xK502mjxPxkswIbag5FB45tuNOF5zRszH+dN81rNw+VSf/J6PVXdmHz/FojyDw==",
       "path": "avalonia.freedesktop/11.0.10",
       "hashPath": "avalonia.freedesktop.11.0.10.nupkg.sha512"
+    },
+    "Avalonia.Markup.Xaml.Loader/11.0.10": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-jgETjvSGfAaSV8pkyn9m/k+8yxzam1nGy9Vrn1o8asch+HD+v+4LxkCZaZKHGhDM49tynBU8tPf6dEbgqNT8Gg==",
+      "path": "avalonia.markup.xaml.loader/11.0.10",
+      "hashPath": "avalonia.markup.xaml.loader.11.0.10.nupkg.sha512"
     },
     "Avalonia.Native/11.0.10": {
       "type": "package",

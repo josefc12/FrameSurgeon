@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "aCROKARX1e2xBS7J+mAAkYzNSpF+pAa4E40va7KVOGPeZqtzuRuk6NCQvz05FeMM5zxvL+8JIc+jCaizX8Gjog==",
+  "dgSpecHash": "dnvvxj1qYbk=",
   "success": true,
   "projectFilePath": "/home/pepe/Programs/framesurgeon_csharp/framesurgeon_csharp.csproj",
   "expectedPackageFiles": [
@@ -13,6 +13,7 @@
     "/home/pepe/.nuget/packages/avalonia.diagnostics/11.0.10/avalonia.diagnostics.11.0.10.nupkg.sha512",
     "/home/pepe/.nuget/packages/avalonia.fonts.inter/11.0.10/avalonia.fonts.inter.11.0.10.nupkg.sha512",
     "/home/pepe/.nuget/packages/avalonia.freedesktop/11.0.10/avalonia.freedesktop.11.0.10.nupkg.sha512",
+    "/home/pepe/.nuget/packages/avalonia.markup.xaml.loader/11.0.10/avalonia.markup.xaml.loader.11.0.10.nupkg.sha512",
     "/home/pepe/.nuget/packages/avalonia.native/11.0.10/avalonia.native.11.0.10.nupkg.sha512",
     "/home/pepe/.nuget/packages/avalonia.reactiveui/11.0.10/avalonia.reactiveui.11.0.10.nupkg.sha512",
     "/home/pepe/.nuget/packages/avalonia.remote.protocol/11.0.10/avalonia.remote.protocol.11.0.10.nupkg.sha512",
@@ -76,8 +77,7 @@
     "/home/pepe/.nuget/packages/system.threading/4.3.0/system.threading.4.3.0.nupkg.sha512",
     "/home/pepe/.nuget/packages/system.threading.tasks/4.3.0/system.threading.tasks.4.3.0.nupkg.sha512",
     "/home/pepe/.nuget/packages/system.threading.tasks.extensions/4.5.4/system.threading.tasks.extensions.4.5.4.nupkg.sha512",
-    "/home/pepe/.nuget/packages/tmds.dbus.protocol/0.15.0/tmds.dbus.protocol.0.15.0.nupkg.sha512",
-    "/home/pepe/.nuget/packages/microsoft.aspnetcore.app.ref/8.0.5/microsoft.aspnetcore.app.ref.8.0.5.nupkg.sha512"
+    "/home/pepe/.nuget/packages/tmds.dbus.protocol/0.15.0/tmds.dbus.protocol.0.15.0.nupkg.sha512"
   ],
   "logs": []
 }

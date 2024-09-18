@@ -3,11 +3,13 @@
         xmlns:vm="using:framesurgeon_csharp.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        Width="584" Height="530"
         x:Class="framesurgeon_csharp.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="framesurgeon_csharp">
+        Title="Frame Surgeon 2"
+	    TransparencyLevelHint="AcrylicBlur"
+	    Background="Transparent">
 
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
@@ -15,6 +17,36 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
+    <DockPanel Background="Blue"> 
+        <StackPanel Background="Orange" Height="32" DockPanel.Dock="Top">
+
+        </StackPanel>
+
+        <StackPanel Background="Orange" Height="32" DockPanel.Dock="Bottom">
+
+        </StackPanel>
+
+        <Panel Background="Green" DockPanel.Dock="Right" Width="244">
+            
+        </Panel>
+
+        <Panel Background="Red" DockPanel.Dock="Left" >
+            <ListBox
+                x:Name="frames"
+                Background="Pink"
+                SelectionMode="Multiple, Toggle">
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="x:String">
+                        <Border BorderBrush="Blue" BorderThickness="1" 
+                                CornerRadius="4" Padding="4">
+                        <TextBlock Text="{Binding}"/>
+                        </Border>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Panel>
+
+        
+    </DockPanel>
 </Window>

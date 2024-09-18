@@ -19,6 +19,7 @@
 /home/pepe/Programs/framesurgeon_csharp/bin/Debug/net8.0/Avalonia.Diagnostics.dll
 /home/pepe/Programs/framesurgeon_csharp/bin/Debug/net8.0/Avalonia.Fonts.Inter.dll
 /home/pepe/Programs/framesurgeon_csharp/bin/Debug/net8.0/Avalonia.FreeDesktop.dll
+/home/pepe/Programs/framesurgeon_csharp/bin/Debug/net8.0/Avalonia.Markup.Xaml.Loader.dll
 /home/pepe/Programs/framesurgeon_csharp/bin/Debug/net8.0/Avalonia.Native.dll
 /home/pepe/Programs/framesurgeon_csharp/bin/Debug/net8.0/Avalonia.ReactiveUI.dll
 /home/pepe/Programs/framesurgeon_csharp/bin/Debug/net8.0/Avalonia.Remote.Protocol.dll
@@ -127,6 +128,6 @@
 /home/pepe/Programs/framesurgeon_csharp/obj/Debug/net8.0/refint/framesurgeon_csharp.dll
 /home/pepe/Programs/framesurgeon_csharp/obj/Debug/net8.0/framesurgeon_csharp.dll
 /home/pepe/Programs/framesurgeon_csharp/obj/Debug/net8.0/framesurgeon_csharp.pdb
-/home/pepe/Programs/framesurgeon_csharp/obj/Debug/net8.0/framesurgeon_csharp.csproj.CopyComplete
 /home/pepe/Programs/framesurgeon_csharp/obj/Debug/net8.0/framesurgeon_csharp.genruntimeconfig.cache
 /home/pepe/Programs/framesurgeon_csharp/obj/Debug/net8.0/ref/framesurgeon_csharp.dll
+/home/pepe/Programs/framesurgeon_csharp/obj/Debug/net8.0/framesur.AB0AFCBD.Up2Date
