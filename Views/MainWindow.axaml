@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:framesurgeon_csharp.ViewModels"
+        xmlns:actipro="http://schemas.actiprosoftware.com/avaloniaui"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         Width="584" Height="530"
@@ -8,45 +9,319 @@
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
         Title="Frame Surgeon 2"
-	    TransparencyLevelHint="AcrylicBlur"
-	    Background="Transparent">
+	    TransparencyLevelHint="Transparent">
+        
 
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <vm:MainWindowViewModel/>
     </Design.DataContext>
-
-
-    <DockPanel Background="Blue"> 
-        <StackPanel Background="Orange" Height="32" DockPanel.Dock="Top">
-
-        </StackPanel>
-
-        <StackPanel Background="Orange" Height="32" DockPanel.Dock="Bottom">
-
-        </StackPanel>
-
-        <Panel Background="Green" DockPanel.Dock="Right" Width="244">
+    
+    <!-- Core color changes -->
+    <Window.Styles>
+        <Style Selector=":selected /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#3baea2"/>
+            <Setter Property="Foreground" Value="#000000"/>
+        </Style>
+        <Style Selector="ComboBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#7fc7bf" />
+            <Setter Property="Foreground" Value="#000000"/>
+        </Style>
+    </Window.Styles>
+    
+    <DockPanel>
+        
+        <!-- Top bar -->
+        <StackPanel 
+            Background="{actipro:ThemeResource Container2BackgroundBrush}"  
+            Height="32"
+            Orientation="Horizontal"
+            DockPanel.Dock="Top" >
             
-        </Panel>
-
-        <Panel Background="Red" DockPanel.Dock="Left" >
-            <ListBox
-                x:Name="frames"
-                Background="Pink"
-                SelectionMode="Multiple, Toggle">
-                <ListBox.ItemTemplate>
-                    <DataTemplate x:DataType="x:String">
-                        <Border BorderBrush="Blue" BorderThickness="1" 
-                                CornerRadius="4" Padding="4">
-                        <TextBlock Text="{Binding}"/>
+            <Button
+                Margin="2"
+                Width="42"
+                FontSize="9"
+                Background="{actipro:ThemeResource Container5BackgroundBrush}">
+                    Load
+            </Button>
+            
+        </StackPanel>
+        <!-- Bottom bar -->
+        <StackPanel
+            Background="{actipro:ThemeResource Container2BackgroundBrush}"  
+            Height="32" 
+            DockPanel.Dock="Bottom" >
+            
+            <Grid 
+                ColumnDefinitions="Auto,Auto,*,Auto,Auto">
+                
+                <StackPanel Grid.Column="0">
+                    <TextBlock
+                        Margin="8 0 0 ,2"
+                        FontSize="9"
+                        FontWeight="Light"
+                        Foreground="{actipro:ThemeResource DefaultForegroundBrushTertiary}">
+                        Output path:
+                    </TextBlock>
+                    <TextBlock
+                        Grid.Column="0"
+                        Margin="8,0,0,0"
+                        FontSize="10"
+                        VerticalAlignment="Center">
+                        Path/computer/Home/MyPath/Animation01/Frames
+                    </TextBlock>
+                </StackPanel>
+                
+                <Button
+                    Margin="2"
+                    Height="20"
+                    Padding="4,0,4,0"
+                    Grid.Column="1">
+                    ...
+                </Button>
+                
+                <ComboBox
+                    Grid.Column="3"
+                    FontSize="12"
+                    SelectedIndex="0"
+                    Margin="0,2,0,2"
+                    MaxDropDownHeight="100">
+                    <ComboBoxItem FontSize="12">TGA</ComboBoxItem>
+                    <ComboBoxItem FontSize="12">JPEG</ComboBoxItem>
+                    <ComboBoxItem FontSize="12">PNG</ComboBoxItem>
+                </ComboBox>
+                
+                <Button
+                    Grid.Column="4"
+                    Margin="2"
+                    FontSize="9"
+                    Background="{actipro:ThemeResource Container5BackgroundBrush}">
+                    Make
+                </Button>
+                
+            </Grid>
+            
+        </StackPanel>
+        <!-- Right/Settings root panel -->
+        <StackPanel
+            Orientation="Vertical"
+            Background="{actipro:ThemeResource Container1BackgroundBrush}"
+            Margin="2"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            DockPanel.Dock="Right" Width="244" >
+            
+            <!-- Make settings card -->
+            <actipro:ShadowChrome
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Top">
+                
+                <Border
+                    Background="{actipro:ThemeResource Container2BackgroundBrush}"
+                    BorderBrush="{actipro:ThemeResource Container2BorderBrush}"
+                    CornerRadius="6"
+                    BorderThickness="1">
+                    
+                    <StackPanel 
+                        Spacing="4"
+                        Margin="4">
+                        
+                        <TextBlock
+                            Margin="4 0 4 6 "
+                            FontSize="9"
+                            FontWeight="Light"
+                            Foreground="{actipro:ThemeResource DefaultForegroundBrushTertiary}">
+                                Make settings
+                        </TextBlock>
+                        
+                        <!-- MAKE MODE -->
+                        <ComboBox
+                            ItemsSource="{Binding ConvertedExportModes}"
+                            FontSize="12"
+                            SelectedIndex="0"
+                            Margin="0,0,0,12"
+                            SelectedItem="{Binding SelectedExportMode}"
+                            
+                            MaxDropDownHeight="100">
+                        </ComboBox>
+                        
+                        <!-- Flipbook settings -->
+                        <Grid 
+                            IsVisible="{Binding IsFlipbookModeSelected}"
+                            ColumnDefinitions = "20,*,20,*,32">
+                            
+                            <TextBlock
+                                Grid.Column="0"
+                                Grid.Row="0"
+                                FontSize="9"
+                                FontWeight="Light"
+                                VerticalAlignment="Center"
+                                Foreground="{actipro:ThemeResource DefaultForegroundBrushTertiary}">
+                                    Hor.: 
+                            </TextBlock>
+                            
+                            <TextBox 
+                                Grid.Column="1"
+                                Grid.Row="0"
+                                Margin="6 0 6 0 "
+                                Watermark="Num."
+                                FontSize="12">
+                            </TextBox>
+                            
+                            <TextBlock 
+                                Grid.Column="2"
+                                Grid.Row="0"
+                                FontSize="9"
+                                FontWeight="Light"
+                                VerticalAlignment="Center"
+                                Foreground="{actipro:ThemeResource DefaultForegroundBrushTertiary}">
+                                    Ver.:
+                            </TextBlock>
+                            
+                            <TextBox 
+                                Grid.Column="3"
+                                Grid.Row="0"
+                                Margin="6 0 6 0 "
+                                Watermark="Num."
+                                FontSize="12">
+                            </TextBox>
+                            
+                            <Button
+                                Grid.Column="4"
+                                Grid.Row="0"
+                                Background="{actipro:ThemeResource Container5BackgroundBrush}">
+                                    <Image Width="16" Height="16" Source="/Assets/avalonia-logo.ico" />
+                            </Button>
+                            
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </actipro:ShadowChrome>
+            
+            <!-- Global settings card -->
+            <actipro:ShadowChrome
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Top">
+                
+                <Border
+                    Background="{actipro:ThemeResource Container2BackgroundBrush}"
+                    BorderBrush="{actipro:ThemeResource Container2BorderBrush}"
+                    CornerRadius="6"
+                    Margin="0,4,0,0"
+                    BorderThickness="1">
+                    
+                    <StackPanel 
+                        Spacing="4"
+                        Margin="4">
+                        
+                        <TextBlock
+                            Margin="4 0 4 6 "
+                            FontSize="9"
+                            FontWeight="Light"
+                            Foreground="{actipro:ThemeResource DefaultForegroundBrushTertiary}">
+                                Global settings
+                        </TextBlock>
+                        
+                        <!-- SIZE settings card -->
+                        <Border
+                            Background="{actipro:ThemeResource Container3BackgroundBrush}"
+                            BorderBrush="{actipro:ThemeResource Container3BorderBrush}"
+                            CornerRadius="6"
+                            BorderThickness="1">
+                            
+                            <StackPanel 
+                                Spacing="4"
+                                Margin="4">
+                                
+                                <TextBlock
+                                    Margin="6 4 4 6 "
+                                    Foreground="{actipro:ThemeResource DefaultForegroundBrushSecondary}"
+                                    FontSize="12">
+                                    Size (per frame):
+                                </TextBlock>
+                                
+                                <StackPanel
+                                    Orientation="Horizontal"
+                                    Margin="4,0,0,0"
+                                    Spacing="4">
+                                    
+                                    <Grid 
+                                        ColumnDefinitions = "32,*"
+                                        RowDefinitions = "30,*">
+                                        
+                                        <TextBlock
+                                            Grid.Column="0"
+                                            Grid.Row="0"
+                                            FontSize="9"
+                                            FontWeight="Light"
+                                            VerticalAlignment="Center"
+                                            Foreground="{actipro:ThemeResource DefaultForegroundBrushTertiary}">
+                                                Width.: 
+                                        </TextBlock>
+                                        
+                                        <TextBox 
+                                            Grid.Column="1"
+                                            Grid.Row="0"
+                                            Margin="6 2 6 2 "
+                                            Watermark="Num."
+                                            FontSize="10">
+                                        </TextBox>
+                                        
+                                        <TextBlock
+                                            Grid.Column="0"
+                                            Grid.Row="1"
+                                            FontSize="9"
+                                            FontWeight="Light"
+                                            VerticalAlignment="Center"
+                                            Foreground="{actipro:ThemeResource DefaultForegroundBrushTertiary}">
+                                                Height.: 
+                                        </TextBlock>
+                                        
+                                        <TextBox 
+                                            Grid.Column="1"
+                                            Grid.Row="1"
+                                            Margin="6 2 6 2 "
+                                            Watermark="Num."
+                                            FontSize="10">
+                                        </TextBox>
+                                        
+                                    </Grid>
+                                    
+                                    <TextBlock
+                                        Background="Green"
+                                        FontSize="12"
+                                        Text="{Binding IsFlipbookModeSelected}"
+                                        VerticalAlignment="Center">
+                                            Text
+                                    </TextBlock>
+                                    
+                                </StackPanel>
+                            </StackPanel> 
                         </Border>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-        </Panel>
-
+                    </StackPanel>
+                </Border>                        
+            </actipro:ShadowChrome>
+            
+        </StackPanel>
+        <!-- Left/Frames root panel -->
+        <Border
+            BorderBrush="{actipro:ThemeResource Container1BorderBrush}"
+            BorderThickness="1"
+            Background="{actipro:ThemeResource Container1BackgroundBrush}"
+            CornerRadius="6"
+            Margin="4"
+            DockPanel.Dock="Left" >
+            <TextBlock
+                Margin="8 4 4 6 "
+                FontSize="9"
+                FontWeight="Light"
+                Foreground="{actipro:ThemeResource DefaultForegroundBrushTertiary}">
+                Frames
+            </TextBlock>
+        </Border>
         
     </DockPanel>
+    
 </Window>

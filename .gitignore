@@ -1,0 +1,47 @@
+# Ignore build outputs
+bin/
+obj/
+
+# Ignore Rider project files
+.idea/
+
+# Ignore VS Code workspace files
+.vscode/
+
+# Ignore Visual Studio files
+.vs/
+*.user
+*.suo
+
+# Ignore NuGet Packages
+*.nupkg
+packages/
+
+# Ignore MSBuild logs
+msbuild.log
+
+# Ignore temporary files
+*.tmp
+*.log
+
+# Ignore application configuration files
+appsettings.json
+appsettings.*.json
+
+# Ignore Avalonia platform-specific packages and caches
+**/App.g.i.cs
+**/App.xaml.g.cs
+**/MainWindow.g.i.cs
+**/MainWindow.xaml.g.cs
+
+# Ignore Avalonia XAML Design-time build files
+**/*.designer.cs
+
+# Ignore other temporary files
+*.cache
+*.lock
+
+# Ignore local environment-specific settings
+launchSettings.json
+
+# Ignore any additional hidden files or folders

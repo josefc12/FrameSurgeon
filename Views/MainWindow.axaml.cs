@@ -9,7 +9,6 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        frames.ItemsSource = new string[] {"cat", "camel", "cow", "chameleon", "mouse", "lion", "zebra" }.OrderBy(x => x);
         Console.WriteLine("Fuck microsoft");
     }
 }
