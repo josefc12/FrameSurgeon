@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("framesurgeon_csharp")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1bd9652c7b8c260518664b5b08df7936a177ea88")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d7b3a9375fcbab11c81b2b89bcd399fbdb13b7fd")]
 [assembly: System.Reflection.AssemblyProductAttribute("framesurgeon_csharp")]
 [assembly: System.Reflection.AssemblyTitleAttribute("framesurgeon_csharp")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
