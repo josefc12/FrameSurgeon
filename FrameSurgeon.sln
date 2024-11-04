@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.002.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FrameSurgeon", "FrameSurgeon.csproj", "{DE860401-717C-4982-8396-9A2AB1E4DAAF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DE860401-717C-4982-8396-9A2AB1E4DAAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE860401-717C-4982-8396-9A2AB1E4DAAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE860401-717C-4982-8396-9A2AB1E4DAAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE860401-717C-4982-8396-9A2AB1E4DAAF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0BA3D788-9B55-452B-B48A-19FA5309C7D3}
+	EndGlobalSection
+EndGlobal
