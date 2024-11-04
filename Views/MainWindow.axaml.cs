@@ -2,7 +2,7 @@ using System.Linq;
 using Avalonia.Controls;
 using System;
 
-namespace framesurgeon_csharp.Views;
+namespace FrameSurgeon.Views;
 
 public partial class MainWindow : Window
 {

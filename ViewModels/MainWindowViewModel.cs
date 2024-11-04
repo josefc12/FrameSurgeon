@@ -1,11 +1,11 @@
 ﻿using System;
 using System.ComponentModel;
-using framesurgeon_csharp.Enums;
 using System.Collections.Generic;
 using System.Linq;
+using FrameSurgeon.Enums;
 
 
-namespace framesurgeon_csharp.ViewModels;
+namespace FrameSurgeon.ViewModels;
 
 public class MainWindowViewModel : INotifyPropertyChanged
 {
@@ -21,7 +21,7 @@ public class MainWindowViewModel : INotifyPropertyChanged
             {
                 _selectedExportMode = GetExportModeAsEnumValue(value);
                 OnPropertyChanged(nameof(SelectedExportMode));
-                IsFlipbookModeSelected = _selectedExportMode == ExportMode.Flipbook;
+                IsFlipBookModeSelected = _selectedExportMode == ExportMode.FlipBook;
             }
         }
     }
@@ -30,7 +30,7 @@ public class MainWindowViewModel : INotifyPropertyChanged
     {
         ExportMode mode = exportMode switch
         {
-            "Flipbook" => ExportMode.Flipbook ,
+            "Flip book" => ExportMode.FlipBook ,
             "Individual Frames" => ExportMode.IndividualFrames ,
             "Animated GIF" => ExportMode.AnimatedGif
         };
@@ -41,9 +41,10 @@ public class MainWindowViewModel : INotifyPropertyChanged
     {
         string mode = exportMode switch
         {
-            ExportMode.Flipbook => "Flipbook",
+            ExportMode.FlipBook => "Flip book",
             ExportMode.IndividualFrames => "Individual Frames",
-            ExportMode.AnimatedGif => "Animated GIF" 
+            ExportMode.AnimatedGif => "Animated GIF",
+            _ => exportMode.ToString()
         };
         return mode;
     }
@@ -58,7 +59,7 @@ public class MainWindowViewModel : INotifyPropertyChanged
         {
             string displayName = mode switch
             {
-                ExportMode.Flipbook => "Flipbook",
+                ExportMode.FlipBook => "Flip book",
                 ExportMode.IndividualFrames => "Individual Frames",
                 ExportMode.AnimatedGif => "Animated GIF",
                 _ => mode.ToString()
@@ -68,16 +69,16 @@ public class MainWindowViewModel : INotifyPropertyChanged
         return convertedModes;
     }
     
-    private bool _isFlipbookModeSelected = true;
-    public bool IsFlipbookModeSelected
+    private bool _isFlipBookModeSelected = true;
+    public bool IsFlipBookModeSelected
     {
-        get => _isFlipbookModeSelected;
+        get => _isFlipBookModeSelected;
         set
         {
-            if (_isFlipbookModeSelected != value)
+            if (_isFlipBookModeSelected != value)
             {
-                _isFlipbookModeSelected = value;
-                OnPropertyChanged(nameof(IsFlipbookModeSelected));
+                _isFlipBookModeSelected = value;
+                OnPropertyChanged(nameof(IsFlipBookModeSelected));
             }
         }
     }

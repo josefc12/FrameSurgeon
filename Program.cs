@@ -2,7 +2,7 @@
 using Avalonia.ReactiveUI;
 using System;
 
-namespace framesurgeon_csharp;
+namespace FrameSurgeon;
 
 sealed class Program
 {

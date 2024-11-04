@@ -1,11 +1,11 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:framesurgeon_csharp.ViewModels"
+        xmlns:vm="using:FrameSurgeon.ViewModels"
         xmlns:actipro="http://schemas.actiprosoftware.com/avaloniaui"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         Width="584" Height="530"
-        x:Class="framesurgeon_csharp.Views.MainWindow"
+        x:Class="FrameSurgeon.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
         Title="Frame Surgeon 2"
@@ -147,9 +147,9 @@
                             MaxDropDownHeight="100">
                         </ComboBox>
                         
-                        <!-- Flipbook settings -->
+                        <!-- Flip book settings -->
                         <Grid 
-                            IsVisible="{Binding IsFlipbookModeSelected}"
+                            IsVisible="{Binding IsFlipBookModeSelected}"
                             ColumnDefinitions = "20,*,20,*,32">
                             
                             <TextBlock
@@ -292,7 +292,7 @@
                                     <TextBlock
                                         Background="Green"
                                         FontSize="12"
-                                        Text="{Binding IsFlipbookModeSelected}"
+                                        Text="{Binding IsFlipBookModeSelected}"
                                         VerticalAlignment="Center">
                                             Text
                                     </TextBlock>

@@ -1,9 +1,9 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
-using framesurgeon_csharp.ViewModels;
+using FrameSurgeon.ViewModels;
 
-namespace framesurgeon_csharp;
+namespace FrameSurgeon;
 
 public class ViewLocator : IDataTemplate
 {

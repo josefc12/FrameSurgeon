@@ -1,8 +1,8 @@
-namespace framesurgeon_csharp.Enums;
+namespace FrameSurgeon.Enums;
 
 public enum ExportMode
 {
-    Flipbook,
+    FlipBook,
     IndividualFrames,
     AnimatedGif
 }

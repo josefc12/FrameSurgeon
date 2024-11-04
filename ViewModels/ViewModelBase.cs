@@ -1,6 +1,6 @@
 ﻿using ReactiveUI;
 
-namespace framesurgeon_csharp.ViewModels;
+namespace FrameSurgeon.ViewModels;
 
 public class ViewModelBase : ReactiveObject
 {

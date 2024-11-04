@@ -1,10 +1,10 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using framesurgeon_csharp.ViewModels;
-using framesurgeon_csharp.Views;
+using FrameSurgeon.ViewModels;
+using FrameSurgeon.Views;
 
-namespace framesurgeon_csharp;
+namespace FrameSurgeon;
 
 public partial class App : Application
 {
