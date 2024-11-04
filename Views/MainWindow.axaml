@@ -239,7 +239,7 @@
                                     Margin="6 4 4 6 "
                                     Foreground="{actipro:ThemeResource DefaultForegroundBrushSecondary}"
                                     FontSize="12">
-                                    Size (per frame):
+                                    Resize (per frame):
                                 </TextBlock>
                                 
                                 <StackPanel
