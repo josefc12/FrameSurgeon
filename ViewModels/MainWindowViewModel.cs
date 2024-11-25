@@ -2,74 +2,45 @@
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
+using ReactiveUI;
+using System.Text;
 using FrameSurgeon.Enums;
-
+using System.Windows.Input;
+using System.Diagnostics;
+using System.Reactive;
+using FrameSurgeon.Classes;
+using System.Runtime.CompilerServices;
+using Avalonia.Interactivity;
+using System.IO;
+using FrameSurgeon.Services;
+using FrameSurgeon.Models;
 
 namespace FrameSurgeon.ViewModels;
 
-public class MainWindowViewModel : INotifyPropertyChanged
+public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
 {
+    public ReactiveCommand<Unit, Unit> LoadNewImages { get; }
 
+    private List<string> _loadedFiles = new List<string>();
     private ExportMode _selectedExportMode;
-    
+    private bool _isFlipBookModeSelected = true;
+    private int _flipbookResolutionHorizontal;
+    private int _flipbookResolutionVertical;
+    public List<string> ConvertedExportModes => ValueConverter.GetConvertedExportModes(Enum.GetValues(typeof(ExportMode)).Cast<ExportMode>());
+
     public string SelectedExportMode
     {
-        get => GetExportModeAsString(_selectedExportMode);
+        get => ValueConverter.GetExportModeAsString(_selectedExportMode);
         set
         {
-            if (_selectedExportMode != GetExportModeAsEnumValue(value))
+            if (_selectedExportMode != ValueConverter.GetExportModeAsEnumValue(value))
             {
-                _selectedExportMode = GetExportModeAsEnumValue(value);
+                _selectedExportMode = ValueConverter.GetExportModeAsEnumValue(value);
                 OnPropertyChanged(nameof(SelectedExportMode));
                 IsFlipBookModeSelected = _selectedExportMode == ExportMode.FlipBook;
             }
         }
     }
-
-    private ExportMode GetExportModeAsEnumValue(string exportMode)
-    {
-        ExportMode mode = exportMode switch
-        {
-            "Flip book" => ExportMode.FlipBook ,
-            "Individual Frames" => ExportMode.IndividualFrames ,
-            "Animated GIF" => ExportMode.AnimatedGif
-        };
-        return mode;
-    }
-    
-    private string GetExportModeAsString(ExportMode exportMode)
-    {
-        string mode = exportMode switch
-        {
-            ExportMode.FlipBook => "Flip book",
-            ExportMode.IndividualFrames => "Individual Frames",
-            ExportMode.AnimatedGif => "Animated GIF",
-            _ => exportMode.ToString()
-        };
-        return mode;
-    }
-
-    public List<string> ConvertedExportModes => GetConvertedExportModes(Enum.GetValues(typeof(ExportMode)).Cast<ExportMode>());
-
-    private List<string> GetConvertedExportModes(IEnumerable<ExportMode> exportModes)
-    {
-        var convertedModes = new List<string>();
-        
-        foreach (ExportMode mode in exportModes)
-        {
-            string displayName = mode switch
-            {
-                ExportMode.FlipBook => "Flip book",
-                ExportMode.IndividualFrames => "Individual Frames",
-                ExportMode.AnimatedGif => "Animated GIF",
-                _ => mode.ToString()
-            };
-            convertedModes.Add(displayName);
-        }
-        return convertedModes;
-    }
-    
-    private bool _isFlipBookModeSelected = true;
     public bool IsFlipBookModeSelected
     {
         get => _isFlipBookModeSelected;
@@ -82,11 +53,78 @@ public class MainWindowViewModel : INotifyPropertyChanged
             }
         }
     }
-    
+    public List<string> LoadedFiles
+    {
+        get => _loadedFiles;
+        set
+        {
+            if (_loadedFiles != value)
+            {
+                _loadedFiles = value;
+                OnPropertyChanged(nameof(LoadedFiles));
+            }
+        }
+    }
+
+    public int FlipbookResolutionHorizontal
+    {
+        get => _flipbookResolutionHorizontal;
+        set
+        {
+            if (_flipbookResolutionHorizontal != value)
+            {
+                _flipbookResolutionHorizontal = value;
+                OnPropertyChanged(nameof(FlipbookResolutionHorizontal));
+            }
+        }
+    }
+
+    public int FlipbookResolutionVertical
+    {
+        get => _flipbookResolutionVertical;
+        set
+        {
+            if (_flipbookResolutionVertical != value)
+            {
+                _flipbookResolutionVertical = value;
+                OnPropertyChanged(nameof(FlipbookResolutionVertical));
+            }
+        }
+    }
+
+
+    public MainWindowViewModel()
+    {
+        LoadedFiles.Add("No frames loaded.");
+        LoadNewImages = ReactiveCommand.Create(RunLoadNewImages);
+    }
+   
     public event PropertyChangedEventHandler? PropertyChanged;
     private void OnPropertyChanged(string propertyName)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
-    
+
+    // COMMAND FUNCTIONS
+    private async void RunLoadNewImages()
+    {
+        // Load paths
+        try
+        {
+            var filePaths = await InputOutput.DoOpenFilePickerAsync();
+            if (!filePaths.Any()) return;
+            LoadedFiles = filePaths.ToList();
+        }
+        catch (Exception e)
+        {
+            throw new Exception($"{e.Message}");
+        }
+
+        // Calculate new dimensions if Flipbook mode is selected.
+        FlipbookResolution fResolution = Calculator.CalculateFlipbookDimensions(LoadedFiles.Count);
+        FlipbookResolutionHorizontal = fResolution.HorizontalAmount;
+        FlipbookResolutionVertical = fResolution.VerticalAmount;
+
+    }
+
 }
