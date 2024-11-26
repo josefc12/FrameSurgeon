@@ -14,19 +14,32 @@ using Avalonia.Interactivity;
 using System.IO;
 using FrameSurgeon.Services;
 using FrameSurgeon.Models;
+using System.Collections.ObjectModel;
+using System.Reactive.Linq;
+using ActiproSoftware.UI.Avalonia.Controls;
 
 namespace FrameSurgeon.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
 {
     public ReactiveCommand<Unit, Unit> LoadNewImages { get; }
+    public ReactiveCommand<string, Unit> RemoveFrame { get; }
+    public ReactiveCommand<Unit, Unit> ResetFlipbookResolution { get; }
+    public ReactiveCommand<Unit, Unit> SetNewOutputPath { get; }
+    public ReactiveCommand<Unit, Unit> ProcessMake { get; }
+    public ReactiveCommand<Unit, Unit> OpenWaringDialog { get; }
 
-    private List<string> _loadedFiles = new List<string>();
+    public Interaction<WarningDialogViewModel, MainWindowViewModel> ShowDialog { get;} = new Interaction<WarningDialogViewModel, MainWindowViewModel>();
+
+    private ObservableCollection<string> _loadedFiles = new ObservableCollection<string>();
     private ExportMode _selectedExportMode;
+    private Extension _selectedExtension;
     private bool _isFlipBookModeSelected = true;
     private int _flipbookResolutionHorizontal;
     private int _flipbookResolutionVertical;
+    private string _outputPath;
     public List<string> ConvertedExportModes => ValueConverter.GetConvertedExportModes(Enum.GetValues(typeof(ExportMode)).Cast<ExportMode>());
+    public List<string> ConvertedExtensions => ValueConverter.GetConvertedExtensions(Enum.GetValues(typeof(Extension)).Cast<Extension>());
 
     public string SelectedExportMode
     {
@@ -37,10 +50,24 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
             {
                 _selectedExportMode = ValueConverter.GetExportModeAsEnumValue(value);
                 OnPropertyChanged(nameof(SelectedExportMode));
-                IsFlipBookModeSelected = _selectedExportMode == ExportMode.FlipBook;
+                IsFlipBookModeSelected = _selectedExportMode == ExportMode.Flipbook || _selectedExportMode == ExportMode.DismantleFlipbook;
             }
         }
     }
+
+    public string SelectedExtension
+    {
+        get => ValueConverter.GetExtensionAsString(_selectedExtension);
+        set
+        {
+            if (_selectedExtension != ValueConverter.GetExtensionAsEnumValue(value))
+            {
+                _selectedExtension = ValueConverter.GetExtensionAsEnumValue(value);
+                OnPropertyChanged(nameof(SelectedExtension));
+            }
+        }
+    }
+
     public bool IsFlipBookModeSelected
     {
         get => _isFlipBookModeSelected;
@@ -49,11 +76,19 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
             if (_isFlipBookModeSelected != value)
             {
                 _isFlipBookModeSelected = value;
+
+                // Recalculate the dimensions of the flipbook
+                // CONSIDER: Only if the user hasn't set their own dimension
+                if (_isFlipBookModeSelected)
+                {
+                    Calculator.CalculateFlipbookDimensions(LoadedFiles.Count);
+                }
+
                 OnPropertyChanged(nameof(IsFlipBookModeSelected));
             }
         }
     }
-    public List<string> LoadedFiles
+    public ObservableCollection<string> LoadedFiles
     {
         get => _loadedFiles;
         set
@@ -91,14 +126,37 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
             }
         }
     }
-
+    public string OutputPath
+    {
+        get => _outputPath;
+        set
+        {
+            if (_outputPath != value)
+            {
+                _outputPath = value;
+                OnPropertyChanged(nameof(OutputPath));
+            }
+        }
+    }
 
     public MainWindowViewModel()
     {
-        LoadedFiles.Add("No frames loaded.");
         LoadNewImages = ReactiveCommand.Create(RunLoadNewImages);
+        RemoveFrame = ReactiveCommand.Create<string>(RunRemoveFrame);
+        ResetFlipbookResolution = ReactiveCommand.Create(RunResetFlipbookResolution);
+        SetNewOutputPath = ReactiveCommand.Create(RunSetNewOutputPath);
+        ProcessMake = ReactiveCommand.Create(RunProcessMake);
+
+        OpenWaringDialog = ReactiveCommand.Create(RunOpenWarningDialog);
+       
+
     }
-   
+    private async void RunOpenWarningDialog()
+    {
+        var warning = new WarningDialogViewModel();
+        await ShowDialog.Handle(warning);
+    }
+
     public event PropertyChangedEventHandler? PropertyChanged;
     private void OnPropertyChanged(string propertyName)
     {
@@ -113,7 +171,11 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
         {
             var filePaths = await InputOutput.DoOpenFilePickerAsync();
             if (!filePaths.Any()) return;
-            LoadedFiles = filePaths.ToList();
+            LoadedFiles.Clear();
+            foreach (var filePath in filePaths)
+            {
+                LoadedFiles.Add(filePath);
+            }
         }
         catch (Exception e)
         {
@@ -121,10 +183,54 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
         }
 
         // Calculate new dimensions if Flipbook mode is selected.
+        SetFlipbookResolution();
+
+    }
+    private void RunRemoveFrame(string itemPath)
+    {
+        LoadedFiles.Remove(itemPath);
+        // Recalculate the dimensions of the flipbook
+        SetFlipbookResolution();
+    }
+    private void RunResetFlipbookResolution()
+    {
+        SetFlipbookResolution();
+    }
+    private async void RunSetNewOutputPath()
+    {
+        // Load output path
+        try
+        {
+            var file = await InputOutput.DoOpenOutputPickerAsync();
+            if (file is null) return;
+            OutputPath = file.Path.AbsolutePath;
+        }
+        catch (Exception e)
+        {
+            throw new Exception($"{e.Message}");
+        }
+    }
+    private async void RunProcessMake()
+    {
+        Processor processor = new Processor();
+        ProcessResult result = await processor.Process(ValueConverter.GetExportModeAsEnumValue(SelectedExportMode), this);
+        if (result.Result == Result.Failure)
+        {
+            Debug.WriteLine(result.Message);
+        }
+        Debug.WriteLine("Ended");
+    }
+
+    private async void RunShowDialog()
+    {
+
+    }
+
+    private void SetFlipbookResolution()
+    {
         FlipbookResolution fResolution = Calculator.CalculateFlipbookDimensions(LoadedFiles.Count);
         FlipbookResolutionHorizontal = fResolution.HorizontalAmount;
         FlipbookResolutionVertical = fResolution.VerticalAmount;
-
     }
 
 }

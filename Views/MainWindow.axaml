@@ -9,6 +9,7 @@
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
         Title="Frame Surgeon 2"
+		WindowStartupLocation="CenterScreen"
 	    TransparencyLevelHint="Transparent">
         
 
@@ -33,26 +34,38 @@
     <DockPanel>
         
         <!-- Top bar -->
-        <StackPanel 
-            Background="{actipro:ThemeResource Container2BackgroundBrush}"  
-            Height="32"
-            Orientation="Horizontal"
+        <Grid 
+			ColumnDefinitions="*,*"
+            Background="{actipro:ThemeResource Container2BackgroundBrush}"
             DockPanel.Dock="Top" >
             
             <Button
+				Grid.Column="0"
                 Margin="4,4,2,2"
                 Width="42"
                 FontSize="9"
+				HorizontalAlignment="Left"
 				Command="{Binding LoadNewImages}"
                 Background="{actipro:ThemeResource Container5BackgroundBrush}">
                     Open
             </Button>
+
+			<Button
+				Grid.Column="1"
+                Margin="4,4,4,2"
+                Width="52"
+                FontSize="9"
+				HorizontalAlignment="Right"
+				Command="{Binding OpenWaringDialog}"
+                Background="{actipro:ThemeResource Container5BackgroundBrush}">
+				Settings
+			</Button>
             
-        </StackPanel>
+        </Grid>
         <!-- Bottom bar -->
         <StackPanel
             Background="{actipro:ThemeResource Container2BackgroundBrush}"  
-            Height="32" 
+            Height="36" 
             DockPanel.Dock="Bottom" >
             
             <Grid 
@@ -70,8 +83,8 @@
                         Grid.Column="0"
                         Margin="8,0,0,0"
                         FontSize="10"
+						Text="{Binding OutputPath}"
                         VerticalAlignment="Center">
-                        Path/computer/Home/MyPath/Animation01/Frames
                     </TextBlock>
                 </StackPanel>
                 
@@ -79,25 +92,26 @@
                     Margin="2"
                     Height="20"
                     Padding="4,0,4,0"
+					Command="{Binding SetNewOutputPath}"
                     Grid.Column="1">
                     ...
                 </Button>
                 
                 <ComboBox
                     Grid.Column="3"
+					ItemsSource="{Binding ConvertedExtensions}"
                     FontSize="12"
                     SelectedIndex="0"
-                    Margin="0,2,0,2"
+                    Margin="4,4,4,6"
+					SelectedItem="{Binding SelectedExtension}"
                     MaxDropDownHeight="100">
-                    <ComboBoxItem FontSize="12">TGA</ComboBoxItem>
-                    <ComboBoxItem FontSize="12">JPEG</ComboBoxItem>
-                    <ComboBoxItem FontSize="12">PNG</ComboBoxItem>
                 </ComboBox>
                 
                 <Button
                     Grid.Column="4"
-                    Margin="2"
+                    Margin="4,4,4,6"
                     FontSize="9"
+					Command="{Binding ProcessMake}"
                     Background="{actipro:ThemeResource Container5BackgroundBrush}">
                     Make
                 </Button>
@@ -180,6 +194,7 @@
 										Margin="6 2 6 2 "
 										Watermark="Num."
 										Text="{Binding FlipbookResolutionHorizontal}"
+										Width="60"
 										FontSize="10">
 									</TextBox>
 
@@ -199,6 +214,7 @@
 										Margin="6 2 6 2 "
 										Watermark="Num."
 										Text="{Binding FlipbookResolutionVertical}"
+										Width="60"
 										FontSize="10">
 									</TextBox>
    								</Grid>
@@ -285,6 +301,7 @@
                                             Grid.Row="0"
                                             Margin="6 2 6 2 "
                                             Watermark="Num."
+											Width="60"
                                             FontSize="10">
                                         </TextBox>
                                         
@@ -303,6 +320,7 @@
                                             Grid.Row="1"
                                             Margin="6 2 6 2 "
                                             Watermark="Num."
+											Width="60"
                                             FontSize="10">
                                         </TextBox>
                                         
@@ -333,8 +351,8 @@
             Margin="4"
             DockPanel.Dock="Left" >
 			<StackPanel
-                        Spacing="4"
-                        Margin="4">
+                Spacing="4"
+                Margin="4">
                 <TextBlock
                     Margin="8 4 4 6 "
                     FontSize="9"
@@ -342,7 +360,25 @@
                     Foreground="{actipro:ThemeResource DefaultForegroundBrushTertiary}">
                     Frames
                 </TextBlock>
-				<ListBox ItemsSource="{Binding LoadedFiles}"/>
+				<ItemsControl ItemsSource="{Binding LoadedFiles}"  FontSize="12">
+					<ItemsControl.ItemTemplate>
+						<DataTemplate>
+							<Grid ColumnDefinitions="5*,*">
+								<TextBlock Text="{Binding}" Grid.Column="0" TextWrapping="NoWrap" VerticalAlignment="Center" />
+								<Button 
+									Grid.Column="1"
+									FontSize="9"
+									Margin="2"
+									HorizontalAlignment="Right"
+									Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).RemoveFrame}"
+									CommandParameter="{Binding}"
+									Background="{actipro:ThemeResource Container5BackgroundBrush}">
+									R
+								</Button>
+							</Grid>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
 			</StackPanel>
         </Border>
     </DockPanel>

@@ -32,5 +32,19 @@ namespace FrameSurgeon.Classes
 
             return files?.Select(file => file.Path.LocalPath) ?? Enumerable.Empty<string>();
         }
+
+        public static async Task<IStorageFile?> DoOpenOutputPickerAsync()
+        {
+
+            if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop ||
+                desktop.MainWindow?.StorageProvider is not { } provider)
+                throw new NullReferenceException("Missing StorageProvider instance.");
+
+            return await provider.SaveFilePickerAsync(new FilePickerSaveOptions()
+            {
+                Title = "Save File"
+            });
+        }
     }
+
 }

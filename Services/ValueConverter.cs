@@ -13,10 +13,11 @@ namespace FrameSurgeon.Classes
         {
             ExportMode mode = exportMode switch
             {
-                "Flip book" => ExportMode.FlipBook,
+                "Flipbook" => ExportMode.Flipbook,
+                "Dismantle Flipbook" => ExportMode.DismantleFlipbook,
                 "Individual Frames" => ExportMode.IndividualFrames,
                 "Animated GIF" => ExportMode.AnimatedGif,
-                _ => ExportMode.FlipBook
+                _ => ExportMode.Flipbook
             };
             return mode;
         }
@@ -25,7 +26,8 @@ namespace FrameSurgeon.Classes
         {
             string mode = exportMode switch
             {
-                ExportMode.FlipBook => "Flip book",
+                ExportMode.Flipbook => "Flipbook",
+                ExportMode.DismantleFlipbook => "Dismantle Flipbook",
                 ExportMode.IndividualFrames => "Individual Frames",
                 ExportMode.AnimatedGif => "Animated GIF",
                 _ => exportMode.ToString()
@@ -41,7 +43,8 @@ namespace FrameSurgeon.Classes
             {
                 string displayName = mode switch
                 {
-                    ExportMode.FlipBook => "Flip book",
+                    ExportMode.Flipbook => "Flipbook",
+                    ExportMode.DismantleFlipbook => "Dismantle Flipbook",
                     ExportMode.IndividualFrames => "Individual Frames",
                     ExportMode.AnimatedGif => "Animated GIF",
                     _ => mode.ToString()
@@ -49,6 +52,60 @@ namespace FrameSurgeon.Classes
                 convertedModes.Add(displayName);
             }
             return convertedModes;
+        }
+
+        public static Extension GetExtensionAsEnumValue(string extension)
+        {
+            Extension ext = extension switch
+            {
+                "TGA" => Extension.TGA,
+                "JPEG" => Extension.JPEG,
+                "PNG" => Extension.PNG,
+                _ => Extension.TGA
+            };
+            return ext;
+        }
+
+        public static string GetExtensionAsString(Extension extension)
+        {
+            string ext = extension switch
+            {
+                Extension.TGA => "TGA",
+                Extension.JPEG => "JPEG",
+                Extension.PNG => "PNG",
+                _ => extension.ToString()
+            };
+            return ext;
+        }
+
+        public static List<string> GetConvertedExtensions(IEnumerable<Extension> extensions)
+        {
+            var convertedExtensions = new List<string>();
+
+            foreach (Extension ext in extensions)
+            {
+                string displayName = ext switch
+                {
+                    Extension.TGA => "TGA",
+                    Extension.JPEG => "JPEG",
+                    Extension.PNG => "PNG",
+                    _ => ext.ToString()
+                };
+                convertedExtensions.Add(displayName);
+            }
+            return convertedExtensions;
+        }
+
+        public static string GetDotExtension(Extension extension)
+        {
+            string ext = extension switch
+            {
+                Extension.TGA => ".tga",
+                Extension.JPEG => ".jpg",
+                Extension.PNG => ".png",
+                _ => extension.ToString()
+            };
+            return ext;
         }
     }
 }
