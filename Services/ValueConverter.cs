@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SkiaSharp;
 
 namespace FrameSurgeon.Classes
 {
@@ -96,14 +97,14 @@ namespace FrameSurgeon.Classes
             return convertedExtensions;
         }
 
-        public static string GetDotExtension(Extension extension)
+        public static SKEncodedImageFormat GetSkEncodedImageFormat(Extension extension)
         {
-            string ext = extension switch
+            SKEncodedImageFormat ext = extension switch
             {
-                Extension.TGA => ".tga",
-                Extension.JPEG => ".jpg",
-                Extension.PNG => ".png",
-                _ => extension.ToString()
+                Extension.TGA => SKEncodedImageFormat.Jpeg,
+                Extension.JPEG => SKEncodedImageFormat.Jpeg,
+                Extension.PNG => SKEncodedImageFormat.Png,
+                _ => SKEncodedImageFormat.Jpeg
             };
             return ext;
         }

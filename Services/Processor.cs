@@ -10,6 +10,7 @@ using System.Drawing;
 using static SkiaSharp.SKImageFilter;
 using FrameSurgeon.Classes;
 using System.Diagnostics;
+using SkiaSharp;
 
 namespace FrameSurgeon.Services
 {
@@ -42,11 +43,10 @@ namespace FrameSurgeon.Services
             // Check if path exists and is a valid image file
             try
             {
-                Image image = Image.FromFile(inputPath);
-                Size imageSize = image.Size;
+                var image = SKBitmap.Decode(inputPath);
 
-                int cropSizeHorizontal = imageSize.Width / h;
-                int cropSizeVertical = imageSize.Height / v;
+                int cropSizeHorizontal = image.Width / h;
+                int cropSizeVertical = image.Height / v;
 
                 int step = 0;
                 // Loop through rows and columns
@@ -54,25 +54,29 @@ namespace FrameSurgeon.Services
                 {
                     for (int col = 0; col < h; col++)
                     {
+                        int x = col * cropSizeHorizontal;
+                        int y = row * cropSizeVertical;
                         // Area of the pixels to be extracted
-                        Rectangle cropArea = new Rectangle(col * cropSizeHorizontal, row * cropSizeVertical, cropSizeHorizontal, cropSizeVertical);
-
+                        var cropArea = new SKRectI(x, y, x + cropSizeHorizontal, y + cropSizeVertical);
+                        
                         // Create a new image/canvas to paste the pixels onto
-                        Bitmap newImage = new Bitmap(cropSizeHorizontal, cropSizeVertical);
-                        newImage.SetResolution(image.HorizontalResolution, image.VerticalResolution);
-                        using (Graphics g = Graphics.FromImage(newImage))
+                        var newImage = new SKBitmap(cropSizeHorizontal, cropSizeVertical);
+
+                        using (var canvas = new SKCanvas(newImage))
                         {
-                            g.Clear(Color.Pink);
-                            g.DrawImage(image, 0, 0, cropArea, GraphicsUnit.Pixel);
+                            canvas.Clear(SKColors.Pink);
+                            canvas.DrawBitmap(image, cropArea, new SKRect(0, 0, cropSizeHorizontal, cropSizeVertical));
                         }
-
-
+                        
                         // Find whether there's a dot at the end of the output path with some kind of an extention
                         outputPath = RemoveExtension(outputPath);
 
                         Extension extE = ValueConverter.GetExtensionAsEnumValue(extension);
-                        string extS = ValueConverter.GetDotExtension(extE);
-                        newImage.Save(outputPath + step + extS);
+                        SKEncodedImageFormat extS = ValueConverter.GetSkEncodedImageFormat(extE);
+                        using (var outputStream = System.IO.File.OpenWrite(outputPath + step))
+                        {
+                            newImage.Encode(outputStream, extS, 100);
+                        }
                         newImage.Dispose();
                         step++;
                     }
