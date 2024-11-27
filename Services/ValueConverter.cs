@@ -16,7 +16,7 @@ namespace FrameSurgeon.Classes
             {
                 "Flipbook" => ExportMode.Flipbook,
                 "Dismantle Flipbook" => ExportMode.DismantleFlipbook,
-                "Individual Frames" => ExportMode.IndividualFrames,
+                "Convert" => ExportMode.Convert,
                 "Animated GIF" => ExportMode.AnimatedGif,
                 _ => ExportMode.Flipbook
             };
@@ -29,7 +29,7 @@ namespace FrameSurgeon.Classes
             {
                 ExportMode.Flipbook => "Flipbook",
                 ExportMode.DismantleFlipbook => "Dismantle Flipbook",
-                ExportMode.IndividualFrames => "Individual Frames",
+                ExportMode.Convert => "Convert",
                 ExportMode.AnimatedGif => "Animated GIF",
                 _ => exportMode.ToString()
             };
@@ -46,7 +46,7 @@ namespace FrameSurgeon.Classes
                 {
                     ExportMode.Flipbook => "Flipbook",
                     ExportMode.DismantleFlipbook => "Dismantle Flipbook",
-                    ExportMode.IndividualFrames => "Individual Frames",
+                    ExportMode.Convert => "Convert",
                     ExportMode.AnimatedGif => "Animated GIF",
                     _ => mode.ToString()
                 };
@@ -105,6 +105,18 @@ namespace FrameSurgeon.Classes
                 Extension.JPEG => SKEncodedImageFormat.Jpeg,
                 Extension.PNG => SKEncodedImageFormat.Png,
                 _ => SKEncodedImageFormat.Jpeg
+            };
+            return ext;
+        }
+
+        public static string GetDotExtension(Extension extension)
+        {
+            string ext = extension switch
+            {
+                Extension.TGA => ".tga",
+                Extension.JPEG => ".jpg",
+                Extension.PNG => ".png",
+                _ => extension.ToString()
             };
             return ext;
         }

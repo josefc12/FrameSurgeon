@@ -4,6 +4,6 @@ public enum ExportMode
 {
     Flipbook,
     DismantleFlipbook,
-    IndividualFrames,
+    Convert,
     AnimatedGif
 }

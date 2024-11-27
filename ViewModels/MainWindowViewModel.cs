@@ -29,12 +29,13 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     public ReactiveCommand<Unit, Unit> ProcessMake { get; }
     public ReactiveCommand<Unit, Unit> OpenWaringDialog { get; }
 
-    public Interaction<WarningDialogViewModel, MainWindowViewModel> ShowDialog { get;} = new Interaction<WarningDialogViewModel, MainWindowViewModel>();
+    public Interaction<DialogViewModel, MainWindowViewModel> ShowDialog { get;} = new Interaction<DialogViewModel, MainWindowViewModel>();
 
     private ObservableCollection<string> _loadedFiles = new ObservableCollection<string>();
     private ExportMode _selectedExportMode;
     private Extension _selectedExtension;
     private bool _isFlipBookModeSelected = true;
+    private bool _frameNotLoaded = true;
     private int _flipbookResolutionHorizontal;
     private int _flipbookResolutionVertical;
     private string _outputPath;
@@ -85,6 +86,18 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
                 }
 
                 OnPropertyChanged(nameof(IsFlipBookModeSelected));
+            }
+        }
+    }
+    public bool FrameNotLoaded
+    {
+        get => _frameNotLoaded;
+        set
+        {
+            if (_frameNotLoaded != value)
+            {
+                _frameNotLoaded = value;
+                OnPropertyChanged(nameof(FrameNotLoaded));
             }
         }
     }
@@ -153,8 +166,8 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     }
     private async void RunOpenWarningDialog()
     {
-        var warning = new WarningDialogViewModel();
-        await ShowDialog.Handle(warning);
+        //TODO
+        Debug.WriteLine("haha");
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -176,6 +189,12 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
             {
                 LoadedFiles.Add(filePath);
             }
+
+            if (LoadedFiles.Count > 0)
+            {
+                FrameNotLoaded = false;
+            }
+
         }
         catch (Exception e)
         {
@@ -189,6 +208,12 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     private void RunRemoveFrame(string itemPath)
     {
         LoadedFiles.Remove(itemPath);
+
+        if (LoadedFiles.Count == 0)
+        {
+            FrameNotLoaded = true;
+        }
+        
         // Recalculate the dimensions of the flipbook
         SetFlipbookResolution();
     }
@@ -216,14 +241,18 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
         ProcessResult result = await processor.Process(ValueConverter.GetExportModeAsEnumValue(SelectedExportMode), this);
         if (result.Result == Result.Failure)
         {
-            Debug.WriteLine(result.Message);
+            // Show error message
+            var warning = new DialogViewModel(DialogType.Warning, result.Message);
+            await ShowDialog.Handle(warning);
+
         }
-        Debug.WriteLine("Ended");
-    }
-
-    private async void RunShowDialog()
-    {
-
+        else
+        {
+            // Show success message
+            var success = new DialogViewModel(DialogType.Success, result.Message);
+            await ShowDialog.Handle(success);
+        }
+       
     }
 
     private void SetFlipbookResolution()

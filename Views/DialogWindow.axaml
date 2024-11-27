@@ -1,0 +1,48 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+		xmlns:vm="using:FrameSurgeon.ViewModels"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		x:Class="FrameSurgeon.Views.DialogWindow"
+		x:DataType="vm:DialogViewModel"
+        mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="100"
+		Width="300" Height="100"
+		WindowStartupLocation="CenterOwner"
+		CanResize="False"
+        Title="Warning">
+	<Grid ColumnDefinitions="*" RowDefinitions="*,2*,1.1*">
+
+		<StackPanel Background="{Binding Color}" Grid.Column="0" Grid.Row="0">
+			<TextBlock
+				Padding="2"
+				FontSize="12"
+				FontWeight="Bold"
+				Text="{Binding Title}"
+				HorizontalAlignment="Center"
+				VerticalAlignment="Center">
+			</TextBlock>
+		</StackPanel>
+
+		<TextBlock
+			Grid.Column="0"
+			Grid.Row="1"
+            FontSize="12"
+			Padding="8"
+			TextWrapping="Wrap"
+			Text="{Binding Message}"
+			HorizontalAlignment="Center"
+            VerticalAlignment="Center">
+		</TextBlock>
+
+		<StackPanel Grid.Column="0" Grid.Row="2">
+			<Button
+				Padding="1"
+				Width="60"
+				Click="CloseButton_Click"
+				>
+				OK
+			</Button>
+		</StackPanel>
+		
+	</Grid>
+</Window>

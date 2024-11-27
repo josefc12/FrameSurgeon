@@ -31,18 +31,24 @@ namespace FrameSurgeon.Services
                 frameAmount = frameAmount + 1;
             }
 
-            int largestEvenDivisor = 0;
 
-            // Frame amount should now be even
-            for (int i = frameAmount / 2 * 2; i > 0; i -= 2)
+            int largestEvenDivisor = 0;
+            if (frameAmount == 2)
             {
-                if (frameAmount % i == 0)
+                largestEvenDivisor = 2;
+            }
+            else
+            {
+                // Frame amount should now be even
+                for (int i = frameAmount / 2 * 2; i > 0; i -= 2)
                 {
-                    largestEvenDivisor = i;
-                    break;
+                    if (frameAmount % i == 0 && i != frameAmount)
+                    {
+                        largestEvenDivisor = i;
+                        break;
+                    }
                 }
             }
-
             return new FlipbookResolution { HorizontalAmount = largestEvenDivisor, VerticalAmount = (frameAmount / largestEvenDivisor) };
         }
     }

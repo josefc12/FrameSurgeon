@@ -27,8 +27,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Views\WarningDialogWindow.axaml.cs">
-      <DependentUpon>WarningDialogWindow.axaml</DependentUpon>
+    <Compile Update="Views\DialogWindow.axaml.cs">
+      <DependentUpon>DialogWindow.axaml</DependentUpon>
     </Compile>
   </ItemGroup>
 </Project>
