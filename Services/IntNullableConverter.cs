@@ -4,24 +4,28 @@ using ImageMagick;
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace FrameSurgeon.Services;
 
 public class IntNullableConverter : IValueConverter
 {
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        return value; // No conversion needed for displaying
+        // Return the value as a string, ensuring null is handled gracefully
+        return value?.ToString() ?? string.Empty;
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        // Try to parse the input as a number, if successful return the value, otherwise return 0 or null
-        if (int.TryParse(value?.ToString(), out int result))
+        if (value == null || string.IsNullOrWhiteSpace(value.ToString()))
         {
-            return result;
+            return null; // Return null for empty input
         }
-        return 0; // Or handle invalid input however you like
+
+        // Parse the string input into an integer, ignoring invalid characters
+        string stringValue = Regex.Replace(value.ToString(), "[^0-9]", "");
+        return int.TryParse(stringValue, out int intValue) ? intValue : (object?)null;
     }
 
 }

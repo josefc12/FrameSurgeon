@@ -200,7 +200,8 @@
 										Grid.Row="0"
 										Margin="6 2 6 2 "
 										Watermark="Num."
-										Text="{Binding FlipbookResolutionHorizontal}"
+										TextChanged="TextBox_OnTextChanged"
+										Text="{Binding FlipbookResolutionHorizontal, Converter={StaticResource IntNullableConverter}}"
 										Width="60"
 										FontSize="10">
 									</TextBox>

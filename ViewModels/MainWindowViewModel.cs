@@ -34,7 +34,7 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     private bool _isFlipBookModeSelected = true;
     private bool _frameNotLoaded = true;
     private bool _transparencyEnabled = false;
-    private string? _flipbookResolutionHorizontal;
+    private int? _flipbookResolutionHorizontal;
     private int? _flipbookResolutionVertical;
     private string _outputPath;
     public List<string> ConvertedExportModes => ValueConverter.GetConvertedExportModes(Enum.GetValues(typeof(ExportMode)).Cast<ExportMode>());
@@ -124,7 +124,7 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
         }
     }
 
-    public string? FlipbookResolutionHorizontal
+    public int? FlipbookResolutionHorizontal
     {
         get => _flipbookResolutionHorizontal;
         set
@@ -258,7 +258,7 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
 
         FlipbookSettings flipbookSettings = new FlipbookSettings()
         {
-            hResolution = 0, //BORKED
+            hResolution = FlipbookResolutionHorizontal ?? 0,
             vResolution = FlipbookResolutionVertical ?? 0,
         };
 
@@ -283,7 +283,7 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     private void SetFlipbookResolution()
     {
         FlipbookResolution fResolution = Calculator.CalculateFlipbookDimensions(LoadedFiles.Count);
-        FlipbookResolutionHorizontal = fResolution.HorizontalAmount.ToString(); //BORKED
+        FlipbookResolutionHorizontal = fResolution.HorizontalAmount; //BORKED
         FlipbookResolutionVertical = fResolution.VerticalAmount;
     }
 }
