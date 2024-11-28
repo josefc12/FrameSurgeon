@@ -2,26 +2,18 @@
 using FrameSurgeon.Models;
 using FrameSurgeon.ViewModels;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Drawing;
-using static SkiaSharp.SKImageFilter;
 using FrameSurgeon.Classes;
-using System.Diagnostics;
-using SkiaSharp;
-using Avalonia.Controls;
-using static System.Net.Mime.MediaTypeNames;
+using ImageMagick;
 
 namespace FrameSurgeon.Services
 {
     public class Processor
     {
-        public async Task<ProcessResult> Process(ExportMode mode, MainWindowViewModel context)
+        public async Task<ProcessResult> Process(GlobalSettings globalSettings, FlipbookSettings flipbookSettings)
         {
             //Validate parameters
-            ProcessResult validatorResult = Validator.IsMakeAllowed(ref context);
+            ProcessResult validatorResult = Validator.IsMakeAllowed(globalSettings, flipbookSettings);
 
             if (validatorResult.Result == Result.Failure)
             {
@@ -29,51 +21,47 @@ namespace FrameSurgeon.Services
             }
 
             // Specific process
-            ProcessResult result = mode switch
+            ProcessResult result = globalSettings.ExportMode switch
             {
-                ExportMode.Flipbook => MakeFlipbook(ref context),
-                ExportMode.DismantleFlipbook => DismantleFlipbook(ref context),
-                ExportMode.Convert => MakeFlipbook(ref context),
-                ExportMode.AnimatedGif => MakeFlipbook(ref context),
+                ExportMode.Flipbook => MakeFlipbook(globalSettings, flipbookSettings),
+                ExportMode.DismantleFlipbook => DismantleFlipbook(globalSettings, flipbookSettings),
+                ExportMode.Convert => MakeFlipbook(globalSettings, flipbookSettings),
+                ExportMode.AnimatedGif => MakeFlipbook(globalSettings, flipbookSettings),
                 _ => new ProcessResult(Result.Failure, "Mode didn't have a set processor function!")
             };
             return await Task.FromResult(result);
         }
 
-        private ProcessResult MakeFlipbook(ref MainWindowViewModel context)
+        private ProcessResult MakeFlipbook(GlobalSettings globalSettings, FlipbookSettings flipbookSettings)
         {
-            // TODO creating the actual flipbook
-            string firstImagePath = context.LoadedFiles[0];
-            string outputPath = context.OutputPath;
-            string extension = context.SelectedExtension;
-            int h = context.FlipbookResolutionHorizontal;
-            int v = context.FlipbookResolutionVertical;
 
             try
             {
-                var firstImage = SKBitmap.Decode(firstImagePath);
+                //New image
+                MagickImage firstImage = new MagickImage(globalSettings.LoadedFiles[0]);
+                //Image size
+                uint newWidth = (uint)(flipbookSettings.hResolution * firstImage.Width);
+                uint newHeight = (uint)(flipbookSettings.vResolution * firstImage.Height);
 
-                // Create a new image/canvas to paste the pixels onto
-                var newImage = new SKBitmap(h * firstImage.Width, v * firstImage.Height);
-                var canvas = new SKCanvas(newImage);
-                canvas.Clear(SKColors.Black);
+                MagickColor color = globalSettings.TransparencyEnabled == true ? MagickColors.Transparent : MagickColors.Black;
+
+                //Create canvas
+                MagickImage canvas = new MagickImage(color, newWidth, newHeight);
 
                 int step = 0;
                 // Loop through rows and columns
-                for (int row = 0; row < v; row++)
+                for (int row = 0; row < flipbookSettings.vResolution; row++)
                 {
-                    for (int col = 0; col < h; col++)
+                    for (int col = 0; col < flipbookSettings.hResolution; col++)
                     {
-                        int x = col * firstImage.Width;
-                        int y = row * firstImage.Height;
-                        // Area of the pixels to be extracted
-                        var cropArea = new SKRectI(x, y, x + firstImage.Width, y + firstImage.Height);
+                        int x = col * (int)firstImage.Width;
+                        int y = row * (int)firstImage.Height;
 
-
-                        if (step <= context.LoadedFiles.Count -1)
+                        if (step <= globalSettings.LoadedFiles.Count -1)
                         {
-                            SKBitmap image = SKBitmap.Decode(context.LoadedFiles[step]);
-                            canvas.DrawBitmap(image,new SKRect(0, 0, firstImage.Width, firstImage.Height), cropArea);
+                            // Area of the pixels to be extracted
+                            MagickImage image = new MagickImage(globalSettings.LoadedFiles[step]);
+                            canvas.Composite(image, x, y, CompositeOperator.Over);
                             image.Dispose();
                             
                         }
@@ -83,75 +71,55 @@ namespace FrameSurgeon.Services
                 }
 
                 // Find whether there's a dot at the end of the output path with some kind of an extention
-                outputPath = RemoveExtension(outputPath);
-
-                Extension extE = ValueConverter.GetExtensionAsEnumValue(extension);
-                SKEncodedImageFormat extV = ValueConverter.GetSkEncodedImageFormat(extE);
-                string extS = ValueConverter.GetDotExtension(extE);
-                using (var outputStream = System.IO.File.OpenWrite(outputPath + extS))
-                {
-                    newImage.Encode(outputStream, extV, 100);
-                }
-                newImage.Dispose();
+                InputOutput.OutputImage(globalSettings.SelectedExtension, globalSettings.OutputPath, canvas);
 
             }
             catch (Exception e)
             {
                 throw new Exception(e.Message);
             }
-
+            
 
             return new ProcessResult(Result.Success, "Flipbook created!");
         }
 
-        private ProcessResult DismantleFlipbook(ref MainWindowViewModel context)
+        private ProcessResult DismantleFlipbook(GlobalSettings globalSettings, FlipbookSettings flipbookSettings)
         {
-            //OPTIMIZE - these make duplicates. Can the output and writing be generalized?
-            string inputPath = context.LoadedFiles[0];
-            string outputPath = context.OutputPath;
-            string extension = context.SelectedExtension;
-            int h = context.FlipbookResolutionHorizontal;
-            int v = context.FlipbookResolutionVertical;
 
             // Check if path exists and is a valid image file
             try
             {
-                var image = SKBitmap.Decode(inputPath);
+                //First image in the loaded images
+                MagickImage image = new MagickImage(globalSettings.LoadedFiles[0]);
 
-                int cropSizeHorizontal = image.Width / h;
-                int cropSizeVertical = image.Height / v;
+                int cropSizeHorizontal = (int)image.Width / flipbookSettings.hResolution;
+                int cropSizeVertical = (int)image.Height / flipbookSettings.vResolution;
 
                 int step = 0;
                 // Loop through rows and columns
-                for (int row = 0; row < v; row++)
+                for (int row = 0; row < flipbookSettings.vResolution; row++)
                 {
-                    for (int col = 0; col < h; col++)
+                    for (int col = 0; col < flipbookSettings.hResolution; col++)
                     {
                         int x = col * cropSizeHorizontal;
                         int y = row * cropSizeVertical;
                         // Area of the pixels to be extracted
-                        var cropArea = new SKRectI(x, y, x + cropSizeHorizontal, y + cropSizeVertical);
-                        
+                        var cropArea = new MagickGeometry(x, y, (uint)cropSizeHorizontal, (uint)cropSizeVertical);
+
+                        MagickImage croppedImage = (MagickImage)image.Clone();
+                        croppedImage.Crop(cropArea);
+
                         // Create a new image/canvas to paste the pixels onto
-                        var newImage = new SKBitmap(cropSizeHorizontal, cropSizeVertical);
+                        MagickColor color = globalSettings.TransparencyEnabled == true ? MagickColors.Transparent : MagickColors.Black;
 
-                        using (var canvas = new SKCanvas(newImage))
-                        {
-                            canvas.Clear(SKColors.Black);
-                            canvas.DrawBitmap(image, cropArea, new SKRect(0, 0, cropSizeHorizontal, cropSizeVertical));
-                        }
-                        
-                        // Find whether there's a dot at the end of the output path with some kind of an extention
-                        outputPath = RemoveExtension(outputPath);
+                        //Create canvas
+                        MagickImage canvas = new MagickImage(color, (uint)cropSizeHorizontal, (uint)cropSizeVertical);
 
-                        Extension extE = ValueConverter.GetExtensionAsEnumValue(extension);
-                        SKEncodedImageFormat extV = ValueConverter.GetSkEncodedImageFormat(extE);
-                        string extS = ValueConverter.GetDotExtension(extE);
-                        using (var outputStream = System.IO.File.OpenWrite(outputPath + step + extS))
-                        {
-                            newImage.Encode(outputStream, extV, 100);
-                        }
-                        newImage.Dispose();
+
+                        canvas.Composite(croppedImage, 0, 0, CompositeOperator.Over);
+
+                        InputOutput.OutputImage(globalSettings.SelectedExtension, globalSettings.OutputPath, canvas, step);
+                        canvas.Dispose();
                         step++;
                     }
                 }
@@ -166,20 +134,6 @@ namespace FrameSurgeon.Services
             
             return new ProcessResult(Result.Success, "Dismantling finished!");
         }
-        private string RemoveExtension(string filePath)
-        {
-            // Loop backward through the file path string
-            for (int i = filePath.Length - 1; i >= 0; i--)
-            {
-                if (filePath[i] == '.')
-                {
-                    // Return the substring that excludes the extension
-                    return filePath.Substring(0, i);
-                }
-            }
-
-            // Return the original string if no dot is found (i.e., no extension)
-            return filePath;
-        }
+        
     }
 }

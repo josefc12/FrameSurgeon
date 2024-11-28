@@ -97,18 +97,6 @@ namespace FrameSurgeon.Classes
             return convertedExtensions;
         }
 
-        public static SKEncodedImageFormat GetSkEncodedImageFormat(Extension extension)
-        {
-            SKEncodedImageFormat ext = extension switch
-            {
-                Extension.TGA => SKEncodedImageFormat.Jpeg,
-                Extension.JPEG => SKEncodedImageFormat.Jpeg,
-                Extension.PNG => SKEncodedImageFormat.Png,
-                _ => SKEncodedImageFormat.Jpeg
-            };
-            return ext;
-        }
-
         public static string GetDotExtension(Extension extension)
         {
             string ext = extension switch

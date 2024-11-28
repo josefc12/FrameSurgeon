@@ -4,6 +4,7 @@ using FrameSurgeon.Enums;
 using FrameSurgeon.Models;
 using FrameSurgeon.ViewModels;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reflection.Metadata.Ecma335;
 
@@ -11,18 +12,16 @@ namespace FrameSurgeon.Services
 {
     public static class Validator
     {
-        //TODO
-        //MAYBE INSTEAD OF PASSING THE WHOLE MAINWINDOWVIEWMODEL PASS ONLY SOME DATA.
-        public static ProcessResult IsMakeAllowed(ref MainWindowViewModel context)
+        public static ProcessResult IsMakeAllowed(GlobalSettings globalSettings, FlipbookSettings flipbookSettings)
         {
 
             foreach (var step in Enum.GetValues<Step>())
             {
                 ProcessResult result = step switch
                 {
-                    Step.ImagesLoaded => CheckImagesLoaded(context.SelectedExportMode, context.LoadedFiles),
-                    Step.ParametersCorrect => CheckParameters(ref context),
-                    Step.OutputPathSet => context.OutputPath == "" || context.OutputPath == null ? new ProcessResult(Result.Failure, "Please set the output path.") : new ProcessResult(Result.Success),
+                    Step.ImagesLoaded => CheckImagesLoaded(globalSettings.ExportMode, globalSettings.LoadedFiles),
+                    Step.ParametersCorrect => CheckParameters(globalSettings, flipbookSettings),
+                    Step.OutputPathSet => globalSettings.OutputPath == "" || globalSettings.OutputPath == null ? new ProcessResult(Result.Failure, "Please set the output path.") : new ProcessResult(Result.Success),
                 };
 
                 if (result.Result == Result.Failure)
@@ -35,11 +34,9 @@ namespace FrameSurgeon.Services
 
         }
 
-        private static ProcessResult CheckImagesLoaded(string selectedExportMode ,ObservableCollection<string> imagesList)
+        private static ProcessResult CheckImagesLoaded(ExportMode selectedExportMode ,List<string> imagesList)
         {
-            ExportMode exportMode = ValueConverter.GetExportModeAsEnumValue(selectedExportMode);
-
-            ProcessResult result = exportMode switch
+            ProcessResult result = selectedExportMode switch
             {
                 ExportMode.Flipbook => imagesList.Count <= 1 ? new ProcessResult(Result.Failure, "Please add more than 1 image.") : new ProcessResult(Result.Success),
                 ExportMode.DismantleFlipbook => imagesList.Count != 1 ? new ProcessResult(Result.Failure, "The list must consist of exactly 1 image.") : new ProcessResult(Result.Success),
@@ -53,29 +50,29 @@ namespace FrameSurgeon.Services
 
 
 
-        private static ProcessResult CheckParameters(ref MainWindowViewModel context)
+        private static ProcessResult CheckParameters(GlobalSettings globalSettings, FlipbookSettings flipbookSettings)
         {
 
-            if (GlobalSettingsValid(ref context) == false)
+            if (GlobalSettingsValid(globalSettings) == false)
             {
                 return new ProcessResult(Result.Failure, "Global settings are invalid.");
             }
 
-            ProcessResult parametersValid = ValueConverter.GetExportModeAsEnumValue(context.SelectedExportMode) switch
+            ProcessResult parametersValid = globalSettings.ExportMode switch
             {
-                ExportMode.Flipbook => CheckFlipbookParameters(ref context),
-                ExportMode.DismantleFlipbook => CheckDismantleFlipbookParameters(ref context),
-                ExportMode.Convert => CheckConversionParameters(ref context),
-                ExportMode.AnimatedGif => CheckAnimatedGifParameters(ref context)
+                ExportMode.Flipbook => CheckFlipbookParameters(flipbookSettings),
+                ExportMode.DismantleFlipbook => CheckDismantleFlipbookParameters(flipbookSettings),
+                ExportMode.Convert => CheckConversionParameters(), //TODO create pass settings object
+                ExportMode.AnimatedGif => CheckAnimatedGifParameters() //TODO create pass settings object
             };
 
             return parametersValid;
         }
 
-        private static ProcessResult CheckFlipbookParameters(ref MainWindowViewModel context)
+        private static ProcessResult CheckFlipbookParameters(FlipbookSettings flipbookSettings)
         {
 
-            if (context.FlipbookResolutionHorizontal == 0 || context.FlipbookResolutionVertical == 0)
+            if (flipbookSettings.hResolution == 0 || flipbookSettings.vResolution == 0)
             {
                 return new ProcessResult(Result.Failure, "Please make sure flipbook dimensions aren't set to 0.");
             }
@@ -84,12 +81,12 @@ namespace FrameSurgeon.Services
 
         }
 
-        private static ProcessResult CheckDismantleFlipbookParameters(ref MainWindowViewModel context)
+        private static ProcessResult CheckDismantleFlipbookParameters(FlipbookSettings flipbookSettings)
         {
 
-            if (context.FlipbookResolutionHorizontal >= 2 || context.FlipbookResolutionVertical >= 2)
+            if (flipbookSettings.hResolution >= 2 || flipbookSettings.vResolution >= 2)
             {
-                if (context.FlipbookResolutionHorizontal == 0 || context.FlipbookResolutionVertical == 0)
+                if (flipbookSettings.hResolution == 0 || flipbookSettings.vResolution == 0)
                 {
                     return new ProcessResult(Result.Failure, "Please make sure flipbook dimensions aren't set to 0.");
                 }
@@ -100,12 +97,12 @@ namespace FrameSurgeon.Services
            
         }
 
-        private static ProcessResult CheckConversionParameters(ref MainWindowViewModel context)
+        private static ProcessResult CheckConversionParameters()
         {
             return new ProcessResult(Result.Success, "Images can be converted safely.");
         }
 
-        private static ProcessResult CheckAnimatedGifParameters(ref MainWindowViewModel context)
+        private static ProcessResult CheckAnimatedGifParameters()
         {
 
             //TODO
@@ -113,7 +110,7 @@ namespace FrameSurgeon.Services
 
         }
 
-        private static bool GlobalSettingsValid(ref MainWindowViewModel context)
+        private static bool GlobalSettingsValid(GlobalSettings globalSettings)
         {
             //TODO
             return true;

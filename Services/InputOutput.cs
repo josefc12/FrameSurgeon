@@ -1,15 +1,12 @@
 ﻿using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using FrameSurgeon.Enums;
 using FrameSurgeon.ViewModels;
+using ImageMagick;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace FrameSurgeon.Classes
@@ -45,6 +42,45 @@ namespace FrameSurgeon.Classes
                 Title = "Save File"
             });
         }
+
+        public static void OutputImage(string extension, string path, MagickImage image, int? loopPosition = null)
+        {
+            // Find whether there's a dot at the end of the output path with some kind of an extention
+            path = RemoveExtension(path);
+
+            Extension extE = ValueConverter.GetExtensionAsEnumValue(extension);
+            string extS = ValueConverter.GetDotExtension(extE);
+
+            string finalPath = loopPosition == null ? path + extS : path + loopPosition + extS;
+
+            image.Format = extE switch
+            {
+                Extension.TGA => MagickFormat.Tga,
+                Extension.JPEG => MagickFormat.Jpeg,
+                Extension.PNG => MagickFormat.Png,
+            };
+
+            image.Write(finalPath);
+
+            image.Dispose();
+        }
+
+        private static string RemoveExtension(string filePath)
+        {
+            // Loop backward through the file path string
+            for (int i = filePath.Length - 1; i >= 0; i--)
+            {
+                if (filePath[i] == '.')
+                {
+                    // Return the substring that excludes the extension
+                    return filePath.Substring(0, i);
+                }
+            }
+
+            // Return the original string if no dot is found (i.e., no extension)
+            return filePath;
+        }
+
     }
 
 }

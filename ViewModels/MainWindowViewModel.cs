@@ -3,20 +3,17 @@ using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using ReactiveUI;
-using System.Text;
 using FrameSurgeon.Enums;
-using System.Windows.Input;
 using System.Diagnostics;
 using System.Reactive;
 using FrameSurgeon.Classes;
-using System.Runtime.CompilerServices;
-using Avalonia.Interactivity;
-using System.IO;
 using FrameSurgeon.Services;
 using FrameSurgeon.Models;
 using System.Collections.ObjectModel;
 using System.Reactive.Linq;
-using ActiproSoftware.UI.Avalonia.Controls;
+using Avalonia.Data.Converters;
+using Avalonia.Data;
+using System.Globalization;
 
 namespace FrameSurgeon.ViewModels;
 
@@ -36,8 +33,9 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     private Extension _selectedExtension;
     private bool _isFlipBookModeSelected = true;
     private bool _frameNotLoaded = true;
-    private int _flipbookResolutionHorizontal;
-    private int _flipbookResolutionVertical;
+    private bool _transparencyEnabled = false;
+    private string? _flipbookResolutionHorizontal;
+    private int? _flipbookResolutionVertical;
     private string _outputPath;
     public List<string> ConvertedExportModes => ValueConverter.GetConvertedExportModes(Enum.GetValues(typeof(ExportMode)).Cast<ExportMode>());
     public List<string> ConvertedExtensions => ValueConverter.GetConvertedExtensions(Enum.GetValues(typeof(Extension)).Cast<Extension>());
@@ -101,6 +99,18 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
             }
         }
     }
+    public bool TransparencyEnabled
+    {
+        get => _transparencyEnabled;
+        set
+        {
+            if (_transparencyEnabled != value)
+            {
+                _transparencyEnabled = value;
+                OnPropertyChanged(nameof(TransparencyEnabled));
+            }
+        }
+    }
     public ObservableCollection<string> LoadedFiles
     {
         get => _loadedFiles;
@@ -114,7 +124,7 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
         }
     }
 
-    public int FlipbookResolutionHorizontal
+    public string? FlipbookResolutionHorizontal
     {
         get => _flipbookResolutionHorizontal;
         set
@@ -127,12 +137,12 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
         }
     }
 
-    public int FlipbookResolutionVertical
+    public int? FlipbookResolutionVertical
     {
         get => _flipbookResolutionVertical;
         set
         {
-            if (_flipbookResolutionVertical != value)
+            if (_flipbookResolutionVertical != value && int.TryParse(value.ToString(), out int x))
             {
                 _flipbookResolutionVertical = value;
                 OnPropertyChanged(nameof(FlipbookResolutionVertical));
@@ -237,8 +247,23 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     }
     private async void RunProcessMake()
     {
+        GlobalSettings globalSettings = new GlobalSettings()
+        {
+            ExportMode = ValueConverter.GetExportModeAsEnumValue(SelectedExportMode),
+            LoadedFiles = LoadedFiles.ToList(),
+            OutputPath = OutputPath,
+            SelectedExtension = SelectedExtension,
+            TransparencyEnabled = TransparencyEnabled,
+        };
+
+        FlipbookSettings flipbookSettings = new FlipbookSettings()
+        {
+            hResolution = 0, //BORKED
+            vResolution = FlipbookResolutionVertical ?? 0,
+        };
+
         Processor processor = new Processor();
-        ProcessResult result = await processor.Process(ValueConverter.GetExportModeAsEnumValue(SelectedExportMode), this);
+        ProcessResult result = await processor.Process(globalSettings, flipbookSettings);
         if (result.Result == Result.Failure)
         {
             // Show error message
@@ -258,8 +283,7 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     private void SetFlipbookResolution()
     {
         FlipbookResolution fResolution = Calculator.CalculateFlipbookDimensions(LoadedFiles.Count);
-        FlipbookResolutionHorizontal = fResolution.HorizontalAmount;
+        FlipbookResolutionHorizontal = fResolution.HorizontalAmount.ToString(); //BORKED
         FlipbookResolutionVertical = fResolution.VerticalAmount;
     }
-
 }
