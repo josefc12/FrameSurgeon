@@ -40,7 +40,7 @@ namespace FrameSurgeon.Services
             {
                 ExportMode.Flipbook => imagesList.Count <= 1 ? new ProcessResult(Result.Failure, "Please add more than 1 image.") : new ProcessResult(Result.Success),
                 ExportMode.DismantleFlipbook => imagesList.Count != 1 ? new ProcessResult(Result.Failure, "The list must consist of exactly 1 image.") : new ProcessResult(Result.Success),
-                ExportMode.Convert => imagesList.Count <= 0 ? new ProcessResult(Result.Failure, "Please add iamge(s).") : new ProcessResult(Result.Success),
+                ExportMode.Convert => imagesList.Count <= 0 ? new ProcessResult(Result.Failure, "Please add image(s).") : new ProcessResult(Result.Success),
                 ExportMode.AnimatedGif => imagesList.Count <= 1 ? new ProcessResult(Result.Failure, "Please add more than 1 image.") : new ProcessResult(Result.Success),
             };
 
@@ -62,7 +62,7 @@ namespace FrameSurgeon.Services
             {
                 ExportMode.Flipbook => CheckFlipbookParameters(flipbookSettings),
                 ExportMode.DismantleFlipbook => CheckDismantleFlipbookParameters(flipbookSettings),
-                ExportMode.Convert => CheckConversionParameters(), //TODO create pass settings object
+                ExportMode.Convert => CheckConversionParameters(),
                 ExportMode.AnimatedGif => CheckAnimatedGifParameters() //TODO create pass settings object
             };
 

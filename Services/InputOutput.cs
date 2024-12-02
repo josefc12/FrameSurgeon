@@ -51,7 +51,7 @@ namespace FrameSurgeon.Classes
             });
         }
 
-        public static void OutputImage(string extension, string path, MagickImage image, int? loopPosition = null)
+        public static void OutputImage(string extension, string path, MagickImage? image = null, MagickImageCollection? collection = null, int? loopPosition = null)
         {
             // Find whether there's a dot at the end of the output path with some kind of an extention
             path = RemoveExtension(path);
@@ -61,16 +61,24 @@ namespace FrameSurgeon.Classes
 
             string finalPath = loopPosition == null ? path + extS : path + loopPosition + extS;
 
-            image.Format = extE switch
+            if (image != null)
             {
-                Extension.TGA => MagickFormat.Tga,
-                Extension.JPEG => MagickFormat.Jpeg,
-                Extension.PNG => MagickFormat.Png,
-            };
+                image.Format = extE switch
+                {
+                    Extension.TGA => MagickFormat.Tga,
+                    Extension.JPEG => MagickFormat.Jpeg,
+                    Extension.PNG => MagickFormat.Png,
+                };
 
-            image.Write(finalPath);
+                image.Write(finalPath);
 
-            image.Dispose();
+                image.Dispose();
+            }
+            else if (collection != null)
+            {
+                collection.Write(finalPath);
+            }
+            
         }
 
         private static string RemoveExtension(string filePath)

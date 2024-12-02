@@ -5,6 +5,10 @@ using System;
 using System.Threading.Tasks;
 using FrameSurgeon.Classes;
 using ImageMagick;
+using Avalonia.Controls;
+using System.Diagnostics;
+using ImageMagick.Drawing;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace FrameSurgeon.Services
 {
@@ -25,8 +29,8 @@ namespace FrameSurgeon.Services
             {
                 ExportMode.Flipbook => MakeFlipbook(globalSettings, flipbookSettings),
                 ExportMode.DismantleFlipbook => DismantleFlipbook(globalSettings, flipbookSettings),
-                ExportMode.Convert => MakeFlipbook(globalSettings, flipbookSettings),
-                ExportMode.AnimatedGif => MakeFlipbook(globalSettings, flipbookSettings),
+                ExportMode.Convert => Convert(globalSettings),
+                ExportMode.AnimatedGif => MakeAnimatedGif(globalSettings/*, gifSettings*/),
                 _ => new ProcessResult(Result.Failure, "Mode didn't have a set processor function!")
             };
             return await Task.FromResult(result);
@@ -129,7 +133,7 @@ namespace FrameSurgeon.Services
 
                         canvas.Composite(croppedImage, 0, 0, CompositeOperator.Over);
 
-                        InputOutput.OutputImage(globalSettings.SelectedExtension, globalSettings.OutputPath, canvas, step);
+                        InputOutput.OutputImage(globalSettings.SelectedExtension, globalSettings.OutputPath, image: canvas, null,step);
                         canvas.Dispose();
                         step++;
                     }
@@ -144,6 +148,70 @@ namespace FrameSurgeon.Services
             }
             
             return new ProcessResult(Result.Success, "Dismantling finished!");
+        }
+
+        private ProcessResult Convert(GlobalSettings globalSettings)
+        {
+            try
+            {
+                int step = 0;
+                //For each loaded path
+                foreach (string path in globalSettings.LoadedFiles)
+                {
+                    //Don't check anything, just load the image and save it as new under the selected format
+                    
+                    MagickImage image = new MagickImage(path);
+
+                    //Re-scale if applicable
+                    ResizeFrame(image, (uint)globalSettings.FrameSizeWidth, (uint)globalSettings.FrameSizeHeight);
+
+                    //The image is disposed of in the OutputImage function
+                    InputOutput.OutputImage(globalSettings.SelectedExtension, globalSettings.OutputPath, image: image, null,step);
+
+                    step++;
+                }
+
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+
+            return new ProcessResult(Result.Success, "Conversion finished!");
+
+        }
+
+        private ProcessResult MakeAnimatedGif(GlobalSettings globalSettings)
+        {
+
+            //TODO Resizing
+
+            using (var collection = new MagickImageCollection())
+            {
+                // Add frames to the collection
+                foreach (string path in globalSettings.LoadedFiles)
+                {
+                    // Create a new image for each frame
+                    MagickImage image = new MagickImage(path);
+
+                    // Set frame delay (in 1/100ths of a second)
+                    image.AnimationDelay = 50;
+
+                    // Add the frame to the collection
+                    collection.Add(image);
+                }
+
+                // Set the loop count (0 for infinite looping)
+                collection[0].AnimationIterations = 0;
+
+                // Optimize the animation (reduces file size)
+                collection.Optimize();
+
+                // Write the animated GIF to file
+                InputOutput.OutputImage(globalSettings.SelectedExtension, globalSettings.OutputPath,collection: collection);
+            }
+
+            return new ProcessResult(Result.Success, "Animated GIF created!");
         }
 
         private void ResizeFrame(MagickImage image, uint width, uint height)

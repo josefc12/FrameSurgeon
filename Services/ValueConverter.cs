@@ -62,6 +62,7 @@ namespace FrameSurgeon.Classes
                 "TGA" => Extension.TGA,
                 "JPEG" => Extension.JPEG,
                 "PNG" => Extension.PNG,
+                "GIF" => Extension.GIF,
                 _ => Extension.TGA
             };
             return ext;
@@ -74,25 +75,36 @@ namespace FrameSurgeon.Classes
                 Extension.TGA => "TGA",
                 Extension.JPEG => "JPEG",
                 Extension.PNG => "PNG",
+                Extension.GIF => "GIF",
                 _ => extension.ToString()
             };
             return ext;
         }
 
-        public static List<string> GetConvertedExtensions(IEnumerable<Extension> extensions)
+        public static List<string> GetConvertedExtensions(ExportMode exportMode)
         {
             var convertedExtensions = new List<string>();
 
-            foreach (Extension ext in extensions)
+            if (exportMode == ExportMode.AnimatedGif)
             {
-                string displayName = ext switch
+                convertedExtensions.Add("GIF");
+                return convertedExtensions;
+            }
+            //Else
+            foreach (Extension ext in Enum.GetValues(typeof(Extension)))
+            {
+                if (ext != Extension.GIF)
                 {
-                    Extension.TGA => "TGA",
-                    Extension.JPEG => "JPEG",
-                    Extension.PNG => "PNG",
-                    _ => ext.ToString()
-                };
-                convertedExtensions.Add(displayName);
+                    string displayName = ext switch
+                    {
+                        Extension.TGA => "TGA",
+                        Extension.JPEG => "JPEG",
+                        Extension.PNG => "PNG",
+                        _ => ext.ToString()
+                    };
+                    convertedExtensions.Add(displayName);
+                }
+                
             }
             return convertedExtensions;
         }
@@ -104,6 +116,7 @@ namespace FrameSurgeon.Classes
                 Extension.TGA => ".tga",
                 Extension.JPEG => ".jpg",
                 Extension.PNG => ".png",
+                Extension.GIF => ".gif",
                 _ => extension.ToString()
             };
             return ext;
