@@ -32,7 +32,6 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
 
     private ObservableCollection<string> _loadedFiles = new ObservableCollection<string>();
     private ExportMode _selectedExportMode;
-    private Extension _selectedExtension;
     private List<string> _convertedExtensions = ValueConverter.GetConvertedExtensions(ExportMode.Flipbook);
     private bool _isFlipBookModeSelected = true;
     private bool _isAnimatedGifModeSelected = true;
@@ -44,25 +43,21 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     private int? _frameSizeWidth;
     private int? _frameSizeHeight;
     private string _outputPath;
+    
+    public string SelectedExtension { get; set;}
     public List<string> ConvertedExportModes => ValueConverter.GetConvertedExportModes(Enum.GetValues(typeof(ExportMode)).Cast<ExportMode>());
     public List<string> ConvertedExtensions 
     {
         get => _convertedExtensions;
         set 
         {
-            if (!_convertedExtensions.SequenceEqual(value))
+            if (_convertedExtensions.SequenceEqual(value) != true)
             {
                 _convertedExtensions = value;
                 OnPropertyChanged(nameof(ConvertedExtensions));
-
-                foreach (var extension in value)
-                {
-                    Debug.WriteLine(extension);
-                }
-
-                SelectedExtension = value[0].ToString();
+                SelectedExtension = _convertedExtensions[0];
+                OnPropertyChanged(nameof(SelectedExtension));
             }
-
         } 
     }
 
@@ -73,27 +68,13 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
         {
             if (_selectedExportMode != ValueConverter.GetExportModeAsEnumValue(value))
             {
+
                 _selectedExportMode = ValueConverter.GetExportModeAsEnumValue(value);
                 OnPropertyChanged(nameof(SelectedExportMode));
                 IsFlipBookModeSelected = _selectedExportMode == ExportMode.Flipbook || _selectedExportMode == ExportMode.DismantleFlipbook;
                 IsAnimatedGifModeSelected = _selectedExportMode == ExportMode.AnimatedGif;
                 //Set appropriate export extentions
                 ConvertedExtensions = ValueConverter.GetConvertedExtensions(_selectedExportMode);
-            }
-        }
-    }
-
-    public string SelectedExtension
-    {
-        get => ValueConverter.GetExtensionAsString(_selectedExtension);
-        set
-        {
-            Debug.WriteLine(_selectedExtension + " selected currently");
-            Debug.WriteLine(value + " selected new");
-            if (_selectedExtension != ValueConverter.GetExtensionAsEnumValue(value))
-            {
-                _selectedExtension = ValueConverter.GetExtensionAsEnumValue(value);
-                OnPropertyChanged(nameof(SelectedExtension));
             }
         }
     }
@@ -268,6 +249,9 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
 
     public MainWindowViewModel()
     {
+        
+        SelectedExtension = _convertedExtensions[0];
+        
         LoadNewImages = ReactiveCommand.Create(RunLoadNewImages);
         RemoveFrame = ReactiveCommand.Create<string>(RunRemoveFrame);
         ResetFlipbookResolution = ReactiveCommand.Create(RunResetFlipbookResolution);

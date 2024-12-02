@@ -109,7 +109,6 @@
                     Grid.Column="3"
 					ItemsSource="{Binding ConvertedExtensions}"
                     FontSize="12"
-                    SelectedIndex="0"
                     Margin="4,4,4,6"
 					SelectedItem="{Binding SelectedExtension}"
                     MaxDropDownHeight="100">
