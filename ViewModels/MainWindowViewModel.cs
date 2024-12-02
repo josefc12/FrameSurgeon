@@ -55,11 +55,12 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
                 _convertedExtensions = value;
                 OnPropertyChanged(nameof(ConvertedExtensions));
 
-                // Ensure SelectedExtension is valid and set to the first item in the updated list
-                if (_convertedExtensions.Any())
+                foreach (var extension in value)
                 {
-                    SelectedExtension = _convertedExtensions[0];
+                    Debug.WriteLine(extension);
                 }
+
+                SelectedExtension = value[0].ToString();
             }
 
         } 
@@ -87,6 +88,8 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
         get => ValueConverter.GetExtensionAsString(_selectedExtension);
         set
         {
+            Debug.WriteLine(_selectedExtension + " selected currently");
+            Debug.WriteLine(value + " selected new");
             if (_selectedExtension != ValueConverter.GetExtensionAsEnumValue(value))
             {
                 _selectedExtension = ValueConverter.GetExtensionAsEnumValue(value);
