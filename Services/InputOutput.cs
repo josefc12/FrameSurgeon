@@ -23,7 +23,15 @@ namespace FrameSurgeon.Classes
             var files = await provider.OpenFilePickerAsync(new FilePickerOpenOptions()
             {
                 Title = "Open image frames",
-                FileTypeFilter = new[] { FilePickerFileTypes.ImageAll },
+                FileTypeFilter = new[] {
+                    new FilePickerFileType("TARGA Image")
+                    {
+                        Patterns = new[] { "*.tga" },
+                        AppleUniformTypeIdentifiers = new[] { "com.truevision.tga-image" }, // Optional, for macOS
+                    },
+                    FilePickerFileTypes.ImageAll
+                    
+                },
                 AllowMultiple = true
             });
 

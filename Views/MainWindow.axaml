@@ -164,7 +164,7 @@
                             ItemsSource="{Binding ConvertedExportModes}"
                             FontSize="12"
                             SelectedIndex="0"
-                            Margin="0,0,0,12"
+                            Margin="0,0,0,4"
                             SelectedItem="{Binding SelectedExportMode}"
                             
                             MaxDropDownHeight="100">
@@ -221,7 +221,8 @@
 										Grid.Row="1"
 										Margin="6 2 6 2 "
 										Watermark="Num."
-										Text="{Binding FlipbookResolutionVertical}"
+										TextChanged="TextBox_OnTextChanged"
+										Text="{Binding FlipbookResolutionVertical, Converter={StaticResource IntNullableConverter}}"
 										Width="60"
 										FontSize="10">
 									</TextBox>
@@ -231,6 +232,7 @@
 									
 									<Button
 									FontSize="9"
+									Command="{Binding ResetFlipbookResolution}"
 									Background="{actipro:ThemeResource Container5BackgroundBrush}">
 										Reset
 									</Button>
@@ -289,7 +291,7 @@
                                     Margin="6 4 4 6 "
                                     Foreground="{actipro:ThemeResource DefaultForegroundBrushSecondary}"
                                     FontSize="12">
-                                    Resize (per frame):
+                                    Frame size:
                                 </TextBlock>
                                 
                                 <StackPanel
@@ -317,6 +319,8 @@
                                             Margin="6 2 6 2 "
                                             Watermark="Num."
 											Width="60"
+											TextChanged="TextBox_OnTextChanged"
+											Text="{Binding FrameSizeWidth, Converter={StaticResource IntNullableConverter}}"
                                             FontSize="10">
                                         </TextBox>
                                         
@@ -336,19 +340,26 @@
                                             Margin="6 2 6 2 "
                                             Watermark="Num."
 											Width="60"
+											TextChanged="TextBox_OnTextChanged"
+											Text="{Binding FrameSizeHeight, Converter={StaticResource IntNullableConverter}}"
                                             FontSize="10">
                                         </TextBox>
                                         
                                     </Grid>
-                                    
-                                    <TextBlock
-                                        Background="Green"
-                                        FontSize="12"
-                                        Text="{Binding IsFlipBookModeSelected}"
-                                        VerticalAlignment="Center">
-                                            Text
-                                    </TextBlock>
-                                    
+									<StackPanel
+										Spacing="8"
+										Orientation="Horizontal"
+									    VerticalAlignment="Center">
+										<ToggleButton IsChecked="{Binding UniformScalingEnabled}">
+											<!-- TODO icon here -->
+										</ToggleButton>
+									    <Button
+									    FontSize="9"
+										Command="{Binding ResetFrameSize}"
+									    Background="{actipro:ThemeResource Container5BackgroundBrush}">
+										    Reset
+									    </Button>
+                                    </StackPanel>
                                 </StackPanel>
                             </StackPanel> 
                         </Border>

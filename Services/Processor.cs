@@ -39,6 +39,10 @@ namespace FrameSurgeon.Services
             {
                 //New image
                 MagickImage firstImage = new MagickImage(globalSettings.LoadedFiles[0]);
+
+                //Re-scale if applicable
+                ResizeFrame(firstImage, (uint)globalSettings.FrameSizeWidth, (uint)globalSettings.FrameSizeHeight);
+
                 //Image size
                 uint newWidth = (uint)(flipbookSettings.hResolution * firstImage.Width);
                 uint newHeight = (uint)(flipbookSettings.vResolution * firstImage.Height);
@@ -61,6 +65,10 @@ namespace FrameSurgeon.Services
                         {
                             // Area of the pixels to be extracted
                             MagickImage image = new MagickImage(globalSettings.LoadedFiles[step]);
+
+                            //Re-scale if applicable
+                            ResizeFrame(image, (uint)globalSettings.FrameSizeWidth, (uint)globalSettings.FrameSizeHeight);
+
                             canvas.Composite(image, x, y, CompositeOperator.Over);
                             image.Dispose();
                             
@@ -109,11 +117,14 @@ namespace FrameSurgeon.Services
                         MagickImage croppedImage = (MagickImage)image.Clone();
                         croppedImage.Crop(cropArea);
 
+                        //Re-scale if applicable
+                        ResizeFrame(croppedImage, (uint)globalSettings.FrameSizeWidth, (uint)globalSettings.FrameSizeHeight);
+
                         // Create a new image/canvas to paste the pixels onto
                         MagickColor color = globalSettings.TransparencyEnabled == true ? MagickColors.Transparent : MagickColors.Black;
 
                         //Create canvas
-                        MagickImage canvas = new MagickImage(color, (uint)cropSizeHorizontal, (uint)cropSizeVertical);
+                        MagickImage canvas = new MagickImage(color, croppedImage.Width, croppedImage.Height);
 
 
                         canvas.Composite(croppedImage, 0, 0, CompositeOperator.Over);
@@ -133,6 +144,14 @@ namespace FrameSurgeon.Services
             }
             
             return new ProcessResult(Result.Success, "Dismantling finished!");
+        }
+
+        private void ResizeFrame(MagickImage image, uint width, uint height)
+        {
+            if ((int)image.Width != width || (int)image.Height != height)
+            {
+                image.Resize(width, height);
+            }
         }
         
     }

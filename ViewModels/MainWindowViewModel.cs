@@ -14,6 +14,7 @@ using System.Reactive.Linq;
 using Avalonia.Data.Converters;
 using Avalonia.Data;
 using System.Globalization;
+using ImageMagick;
 
 namespace FrameSurgeon.ViewModels;
 
@@ -22,6 +23,7 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     public ReactiveCommand<Unit, Unit> LoadNewImages { get; }
     public ReactiveCommand<string, Unit> RemoveFrame { get; }
     public ReactiveCommand<Unit, Unit> ResetFlipbookResolution { get; }
+    public ReactiveCommand<Unit, Unit> ResetFrameSize { get; }
     public ReactiveCommand<Unit, Unit> SetNewOutputPath { get; }
     public ReactiveCommand<Unit, Unit> ProcessMake { get; }
     public ReactiveCommand<Unit, Unit> OpenWaringDialog { get; }
@@ -34,8 +36,11 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     private bool _isFlipBookModeSelected = true;
     private bool _frameNotLoaded = true;
     private bool _transparencyEnabled = false;
+    private bool _uniformScalingEnabled = true;
     private int? _flipbookResolutionHorizontal;
     private int? _flipbookResolutionVertical;
+    private int? _frameSizeWidth;
+    private int? _frameSizeHeight;
     private string _outputPath;
     public List<string> ConvertedExportModes => ValueConverter.GetConvertedExportModes(Enum.GetValues(typeof(ExportMode)).Cast<ExportMode>());
     public List<string> ConvertedExtensions => ValueConverter.GetConvertedExtensions(Enum.GetValues(typeof(Extension)).Cast<Extension>());
@@ -84,6 +89,26 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
                 }
 
                 OnPropertyChanged(nameof(IsFlipBookModeSelected));
+            }
+        }
+    }
+    public bool UniformScalingEnabled
+    {
+        get => _uniformScalingEnabled;
+        set
+        {
+            if (_uniformScalingEnabled != value)
+            {
+                _uniformScalingEnabled = value;
+
+                // Recalculate the dimensions of the flipbook
+                // CONSIDER: Only if the user hasn't set their own dimension
+                if (_uniformScalingEnabled)
+                {
+                    Calculator.CalculateFlipbookDimensions(LoadedFiles.Count);
+                }
+
+                OnPropertyChanged(nameof(UniformScalingEnabled));
             }
         }
     }
@@ -149,6 +174,40 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
             }
         }
     }
+    public int? FrameSizeWidth
+    {
+        get => _frameSizeWidth;
+        set
+        {
+            if (_frameSizeWidth != value && int.TryParse(value.ToString(), out int x))
+            {
+                _frameSizeWidth = value;
+                OnPropertyChanged(nameof(FrameSizeWidth));
+                if (_uniformScalingEnabled)
+                {
+                    FrameSizeHeight = value;
+
+                }
+            }
+        }
+    }
+    public int? FrameSizeHeight
+    {
+        get => _frameSizeHeight;
+        set
+        {
+            if (_frameSizeHeight != value && int.TryParse(value.ToString(), out int x))
+            {
+                _frameSizeHeight = value;
+                OnPropertyChanged(nameof(FrameSizeHeight));
+                if (_uniformScalingEnabled)
+                {
+                    FrameSizeWidth = value;
+
+                }
+            }
+        }
+    }
     public string OutputPath
     {
         get => _outputPath;
@@ -167,6 +226,7 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
         LoadNewImages = ReactiveCommand.Create(RunLoadNewImages);
         RemoveFrame = ReactiveCommand.Create<string>(RunRemoveFrame);
         ResetFlipbookResolution = ReactiveCommand.Create(RunResetFlipbookResolution);
+        ResetFrameSize = ReactiveCommand.Create(RunResetFrameSize);
         SetNewOutputPath = ReactiveCommand.Create(RunSetNewOutputPath);
         ProcessMake = ReactiveCommand.Create(RunProcessMake);
 
@@ -213,6 +273,7 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
 
         // Calculate new dimensions if Flipbook mode is selected.
         SetFlipbookResolution();
+        SetFrameSize();
 
     }
     private void RunRemoveFrame(string itemPath)
@@ -226,10 +287,15 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
         
         // Recalculate the dimensions of the flipbook
         SetFlipbookResolution();
+        SetFrameSize();
     }
     private void RunResetFlipbookResolution()
     {
         SetFlipbookResolution();
+    }
+    private void RunResetFrameSize()
+    {
+        SetFrameSize();
     }
     private async void RunSetNewOutputPath()
     {
@@ -254,6 +320,8 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
             OutputPath = OutputPath,
             SelectedExtension = SelectedExtension,
             TransparencyEnabled = TransparencyEnabled,
+            FrameSizeHeight = FrameSizeHeight ?? 0,
+            FrameSizeWidth = FrameSizeWidth ?? 0,
         };
 
         FlipbookSettings flipbookSettings = new FlipbookSettings()
@@ -283,7 +351,21 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     private void SetFlipbookResolution()
     {
         FlipbookResolution fResolution = Calculator.CalculateFlipbookDimensions(LoadedFiles.Count);
-        FlipbookResolutionHorizontal = fResolution.HorizontalAmount; //BORKED
+        FlipbookResolutionHorizontal = fResolution.HorizontalAmount;
         FlipbookResolutionVertical = fResolution.VerticalAmount;
+    }
+
+    private void SetFrameSize()
+    {
+        if (LoadedFiles.Count() <= 0)
+        { return; }
+        //First "leading" frame
+        MagickImage firstImage = new MagickImage(LoadedFiles[0]);
+
+        FrameSizeWidth = (int)firstImage.Width;
+        FrameSizeHeight = (int?)firstImage.Height;
+
+        firstImage.Dispose();
+
     }
 }
