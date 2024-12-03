@@ -1,4 +1,7 @@
 ﻿using FrameSurgeon.Enums;
+using ReactiveUI;
+using System.Reactive;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace FrameSurgeon.ViewModels
@@ -8,6 +11,8 @@ namespace FrameSurgeon.ViewModels
         public string? Title { get; set; }
         public string? Message { get; set; }
         public string? Color { get; set; }
+
+        public Interaction<Unit, Unit> CloseDialog { get; } = new Interaction<Unit, Unit>();
 
         public DialogViewModel(DialogType dialogType, string? message)
         {

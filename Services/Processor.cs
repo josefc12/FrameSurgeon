@@ -9,15 +9,28 @@ using Avalonia.Controls;
 using System.Diagnostics;
 using ImageMagick.Drawing;
 using static System.Net.Mime.MediaTypeNames;
+using System.Linq;
+using Avalonia.Threading;
+using System.Threading;
 
 namespace FrameSurgeon.Services
 {
     public class Processor
     {
-        public async Task<ProcessResult> Process(GlobalSettings globalSettings, FlipbookSettings flipbookSettings)
+        public ProcessResult Process(GlobalSettings globalSettings, FlipbookSettings flipbookSettings, GifSettings gifSettings, MainWindowViewModel context)
         {
+            Thread.Sleep(100);
+
+            //Set progress bar divisions
+            Dispatcher.UIThread.Post(() => {context.MaxProgress = 3;});
+
             //Validate parameters
             ProcessResult validatorResult = Validator.IsMakeAllowed(globalSettings, flipbookSettings);
+
+            //First division complete
+            Dispatcher.UIThread.Post(() => {context.CurrentProgress++;});
+
+            Thread.Sleep(100);
 
             if (validatorResult.Result == Result.Failure)
             {
@@ -27,16 +40,16 @@ namespace FrameSurgeon.Services
             // Specific process
             ProcessResult result = globalSettings.ExportMode switch
             {
-                ExportMode.Flipbook => MakeFlipbook(globalSettings, flipbookSettings),
-                ExportMode.DismantleFlipbook => DismantleFlipbook(globalSettings, flipbookSettings),
-                ExportMode.Convert => Convert(globalSettings),
-                ExportMode.AnimatedGif => MakeAnimatedGif(globalSettings/*, gifSettings*/),
+                ExportMode.Flipbook => MakeFlipbook(globalSettings, flipbookSettings, context),
+                ExportMode.DismantleFlipbook => DismantleFlipbook(globalSettings, flipbookSettings, context),
+                ExportMode.Convert => Convert(globalSettings, context),
+                ExportMode.AnimatedGif => MakeAnimatedGif(globalSettings, gifSettings, context),
                 _ => new ProcessResult(Result.Failure, "Mode didn't have a set processor function!")
             };
-            return await Task.FromResult(result);
+            return result;
         }
 
-        private ProcessResult MakeFlipbook(GlobalSettings globalSettings, FlipbookSettings flipbookSettings)
+        private ProcessResult MakeFlipbook(GlobalSettings globalSettings, FlipbookSettings flipbookSettings, MainWindowViewModel context)
         {
 
             try
@@ -55,6 +68,9 @@ namespace FrameSurgeon.Services
 
                 //Create canvas
                 MagickImage canvas = new MagickImage(color, newWidth, newHeight);
+
+                //Max amount from 2nd progress bar division
+                var maxProgress = flipbookSettings.vResolution * flipbookSettings.hResolution;
 
                 int step = 0;
                 // Loop through rows and columns
@@ -78,12 +94,17 @@ namespace FrameSurgeon.Services
                             
                         }
                         step++;
-
+                        Thread.Sleep(100);
+                        //Adding to second division
+                        Dispatcher.UIThread.Post(() => { context.CurrentProgress += 1.0 / maxProgress; });
                     }
                 }
 
                 // Find whether there's a dot at the end of the output path with some kind of an extention
                 InputOutput.OutputImage(globalSettings.SelectedExtension, globalSettings.OutputPath, canvas);
+                Thread.Sleep(100);
+                //Adding to third
+                Dispatcher.UIThread.Post(() => { context.CurrentProgress++; });
 
             }
             catch (Exception e)
@@ -95,7 +116,7 @@ namespace FrameSurgeon.Services
             return new ProcessResult(Result.Success, "Flipbook created!");
         }
 
-        private ProcessResult DismantleFlipbook(GlobalSettings globalSettings, FlipbookSettings flipbookSettings)
+        private ProcessResult DismantleFlipbook(GlobalSettings globalSettings, FlipbookSettings flipbookSettings, MainWindowViewModel context)
         {
 
             // Check if path exists and is a valid image file
@@ -106,6 +127,9 @@ namespace FrameSurgeon.Services
 
                 int cropSizeHorizontal = (int)image.Width / flipbookSettings.hResolution;
                 int cropSizeVertical = (int)image.Height / flipbookSettings.vResolution;
+
+                //Max amount from 2nd progress bar division
+                var maxProgress = flipbookSettings.vResolution * flipbookSettings.hResolution;
 
                 int step = 0;
                 // Loop through rows and columns
@@ -136,6 +160,11 @@ namespace FrameSurgeon.Services
                         InputOutput.OutputImage(globalSettings.SelectedExtension, globalSettings.OutputPath, image: canvas, null,step);
                         canvas.Dispose();
                         step++;
+
+                        Thread.Sleep(100);
+                        //Adding to second division
+                        Dispatcher.UIThread.Post(() => { context.CurrentProgress += 2.0 / maxProgress; });
+
                     }
                 }
 
@@ -150,10 +179,14 @@ namespace FrameSurgeon.Services
             return new ProcessResult(Result.Success, "Dismantling finished!");
         }
 
-        private ProcessResult Convert(GlobalSettings globalSettings)
+        private ProcessResult Convert(GlobalSettings globalSettings, MainWindowViewModel context)
         {
             try
             {
+
+                //Max amount from 2nd progress bar division
+                var maxProgress = globalSettings.LoadedFiles.Count();
+
                 int step = 0;
                 //For each loaded path
                 foreach (string path in globalSettings.LoadedFiles)
@@ -169,6 +202,10 @@ namespace FrameSurgeon.Services
                     InputOutput.OutputImage(globalSettings.SelectedExtension, globalSettings.OutputPath, image: image, null,step);
 
                     step++;
+
+                    Thread.Sleep(100);
+                    //Adding to second division
+                    Dispatcher.UIThread.Post(() => { context.CurrentProgress += 2.0 / maxProgress; });
                 }
 
             }
@@ -181,34 +218,55 @@ namespace FrameSurgeon.Services
 
         }
 
-        private ProcessResult MakeAnimatedGif(GlobalSettings globalSettings)
+        private ProcessResult MakeAnimatedGif(GlobalSettings globalSettings, GifSettings gifSettings, MainWindowViewModel context)
         {
 
-            //TODO Resizing
+            //Max amount from 2nd progress bar division
+            var maxProgress = globalSettings.LoadedFiles.Count();
 
             using (var collection = new MagickImageCollection())
             {
+                
                 // Add frames to the collection
                 foreach (string path in globalSettings.LoadedFiles)
-                {
+                {   
+                        
+
                     // Create a new image for each frame
                     MagickImage image = new MagickImage(path);
+                    ResizeFrame(image, (uint)globalSettings.FrameSizeWidth, (uint)globalSettings.FrameSizeHeight);
 
                     // Set frame delay (in 1/100ths of a second)
-                    image.AnimationDelay = 50;
+                    image.AnimationDelay = 100 / (uint)gifSettings.Fps ;
 
                     // Add the frame to the collection
                     collection.Add(image);
+
+                    Thread.Sleep(100);
+                    //Adding to second division
+                    Dispatcher.UIThread.Post(() => { context.CurrentProgress += 1.0 / maxProgress; });
+
                 }
 
                 // Set the loop count (0 for infinite looping)
-                collection[0].AnimationIterations = 0;
+                if (gifSettings.Looping)
+                {
+                    collection[0].AnimationIterations = 0;
+                }
+                else
+                {
+                    collection[0].AnimationIterations = 1;
+                }
 
                 // Optimize the animation (reduces file size)
                 collection.Optimize();
 
                 // Write the animated GIF to file
                 InputOutput.OutputImage(globalSettings.SelectedExtension, globalSettings.OutputPath,collection: collection);
+
+                Thread.Sleep(100);
+                //Adding to third
+                Dispatcher.UIThread.Post(() => { context.CurrentProgress++; });
             }
 
             return new ProcessResult(Result.Success, "Animated GIF created!");

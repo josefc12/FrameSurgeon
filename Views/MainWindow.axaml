@@ -5,6 +5,7 @@
         xmlns:actipro="http://schemas.actiprosoftware.com/avaloniaui"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:svg="clr-namespace:Avalonia.Svg;assembly=Avalonia.Svg"
         Width="584" Height="530"
         x:Class="FrameSurgeon.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
@@ -31,11 +32,43 @@
             <Setter Property="Background" Value="#3baea2"/>
             <Setter Property="Foreground" Value="#000000"/>
         </Style>
-        <Style Selector="ComboBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="#7fc7bf" />
-            <Setter Property="Foreground" Value="#000000"/>
-        </Style>
-    </Window.Styles>
+		<Style Selector="ComboBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="Background" Value="#7fc7bf" />
+			<Setter Property="Foreground" Value="#000000"/>
+		</Style>
+
+		<Style Selector="ToggleButton">
+			<Setter Property="Padding" Value="4" />
+			<Setter Property="Template">
+				<ControlTemplate>
+					<Border Name="PART_Border"
+							Background="Transparent"
+							BorderBrush="{TemplateBinding Content}"
+							BorderThickness="1">
+					        <ContentPresenter
+								Name="PART_ContentPresenter"
+                                Content="{TemplateBinding Content}"
+					            HorizontalAlignment="Center"
+					            VerticalAlignment="Center" />
+					</Border>
+				</ControlTemplate>
+			</Setter>
+		</Style>
+		
+		<Style Selector="ToggleButton Image.uniform-on">
+			<Setter Property="IsVisible" Value="False"/>
+		</Style>
+		<Style Selector="ToggleButton:checked Image.uniform-on">
+			<Setter Property="IsVisible" Value="True" />
+		</Style>
+		<Style Selector="ToggleButton Image.uniform-off">
+			<Setter Property="IsVisible" Value="True"/>
+		</Style>
+		<Style Selector="ToggleButton:checked Image.uniform-off">
+			<Setter Property="IsVisible" Value="False"/>
+		</Style>
+
+	</Window.Styles>
     
     <DockPanel>
         
@@ -46,6 +79,7 @@
             DockPanel.Dock="Top" >
             
             <Button
+				IsEnabled="{Binding !IsProcessing}"
 				Grid.Column="0"
                 Margin="4,4,2,2"
                 Width="42"
@@ -57,27 +91,38 @@
             </Button>
 
 			<Button
+				IsEnabled="{Binding !IsProcessing}"
 				Grid.Column="1"
                 Margin="4,4,4,2"
-                Width="52"
+				Padding="4"
+                Width="28"
                 FontSize="9"
 				HorizontalAlignment="Right"
-				Command="{Binding OpenWaringDialog}"
+				Command="{Binding OpenSettings}"
                 Background="{actipro:ThemeResource Container5BackgroundBrush}">
-				Settings
+				<Image Classes="uniform-on" Source="{SvgImage /Assets/Svg/gear-fill.svg}"/>
 			</Button>
             
         </Grid>
         <!-- Bottom bar -->
+		<!-- 36 -->
         <StackPanel
-            Background="{actipro:ThemeResource Container2BackgroundBrush}"  
+            Background="{actipro:ThemeResource Container2BackgroundBrush}"
             Height="36" 
             DockPanel.Dock="Bottom" >
-            
+			<ProgressBar
+				IsVisible="{Binding IsProcessing}"
+				Margin="10 12 10 15"
+				Height=""
+                Minimum="0"
+				Maximum="{Binding MaxProgress}"
+				Value="{Binding CurrentProgress}"
+                ShowProgressText="True"/>
             <Grid 
                 ColumnDefinitions="Auto,Auto,*,Auto,Auto">
 
 				<Button
+					IsEnabled="{Binding !IsProcessing}"
                     Margin="8,2"
                     Height="20"
                     Padding="4,0,4,0"
@@ -102,10 +147,11 @@
                         VerticalAlignment="Center">
                     </TextBlock>
                 </StackPanel>
-                
-                
-                
-                <ComboBox
+
+
+
+				<ComboBox
+					IsEnabled="{Binding !IsProcessing}"
                     Grid.Column="3"
 					ItemsSource="{Binding ConvertedExtensions}"
                     FontSize="12"
@@ -115,6 +161,7 @@
                 </ComboBox>
                 
                 <Button
+                    IsEnabled="{Binding !IsProcessing}"
                     Grid.Column="4"
                     Margin="4,4,4,6"
                     FontSize="9"
@@ -159,14 +206,15 @@
                         </TextBlock>
                         
                         <!-- MAKE MODE -->
-                        <ComboBox
+						<ComboBox
+							IsEnabled="{Binding !IsProcessing}"
                             ItemsSource="{Binding ConvertedExportModes}"
                             FontSize="12"
                             SelectedIndex="0"
                             Margin="0,0,0,4"
                             SelectedItem="{Binding SelectedExportMode}"
                             
-                            MaxDropDownHeight="100">
+                            MaxDropDownHeight="200">
                         </ComboBox>
                         
                         <!-- Flip book settings -->
@@ -195,6 +243,7 @@
 										Hor.:
 									</TextBlock>
 									<TextBox
+										IsEnabled="{Binding !IsProcessing}"
 										Grid.Column="1"
 										Grid.Row="0"
 										Margin="6 2 6 2 "
@@ -216,6 +265,7 @@
 									</TextBlock>
 
 									<TextBox
+										IsEnabled="{Binding !IsProcessing}"
 										Grid.Column="1"
 										Grid.Row="1"
 										Margin="6 2 6 2 "
@@ -228,19 +278,88 @@
    								</Grid>
 								<StackPanel
 									VerticalAlignment="Center">
-									
+
 									<Button
-									FontSize="9"
-									Command="{Binding ResetFlipbookResolution}"
-									Background="{actipro:ThemeResource Container5BackgroundBrush}">
-										Reset
+									    IsEnabled="{Binding !IsProcessing}"
+									    FontSize="9"
+									    Width="24"
+									    Padding="2"
+									    Command="{Binding ResetFlipbookResolution}"
+									    Background="{actipro:ThemeResource Container5BackgroundBrush}">
+										<Image Classes="uniform-on" Source="{SvgImage /Assets/Svg/arrow-repeat.svg}"/>
 									</Button>
 									
 								</StackPanel>
 
 							</StackPanel>
 						</Border>
-                    </StackPanel>
+
+						<!-- Animated GIF settings -->
+						<Border
+							IsVisible="{Binding IsAnimatedGifModeSelected}"
+                            Background="{actipro:ThemeResource Container3BackgroundBrush}"
+                            BorderBrush="{actipro:ThemeResource Container3BorderBrush}"
+                            CornerRadius="6"
+                            BorderThickness="1">
+							<StackPanel Orientation="Vertical">
+							    <StackPanel
+                                        Orientation="Horizontal"
+                                        Margin="6,4,0,4"
+                                        Spacing="4">
+
+								    <Grid
+									    ColumnDefinitions = "32,*"
+									    RowDefinitions = "30,*">
+
+									    <TextBlock
+										    Grid.Column="0"
+										    Grid.Row="0"
+										    FontSize="9"
+										    FontWeight="Light"
+										    VerticalAlignment="Center"
+										    Foreground="{actipro:ThemeResource DefaultForegroundBrushTertiary}">
+										    FPS.:
+									    </TextBlock>
+										<TextBox
+											IsEnabled="{Binding !IsProcessing}"
+										    Grid.Column="1"
+										    Grid.Row="0"
+										    Margin="6 2 6 2 "
+										    Watermark="Num."
+										    TextChanged="TextBox_OnTextChanged"
+										    Text="{Binding GifFps, Converter={StaticResource IntNullableConverter}}"
+										    Width="60"
+										    FontSize="10">
+									    </TextBox>
+								    </Grid>
+								    <StackPanel
+									    VerticalAlignment="Center">
+
+										<Button
+											IsEnabled="{Binding !IsProcessing}"
+									        FontSize="9"
+									        Width="24"
+									        Padding="2"
+									        Command="{Binding ResetGifFps}"
+									        Background="{actipro:ThemeResource Container5BackgroundBrush}">
+										        <Image Classes="uniform-on" Source="{SvgImage /Assets/Svg/arrow-repeat.svg}"/>
+									    </Button>
+
+								    </StackPanel>
+								   
+							    </StackPanel>
+								<CheckBox
+									IsEnabled="{Binding !IsProcessing}"
+									Margin="4 0 0 6"
+									FontSize="12"
+									Foreground="{actipro:ThemeResource DefaultForegroundBrushSecondary}"
+									IsChecked="{Binding GifLooping}">
+									Looping
+								</CheckBox>
+							</StackPanel>
+						</Border>
+
+					</StackPanel>
                 </Border>
             </actipro:ShadowChrome>
             
@@ -269,6 +388,7 @@
                         </TextBlock>
 
 						<CheckBox 
+							IsEnabled="{Binding !IsProcessing}"
 							FontSize="12"
 							Foreground="{actipro:ThemeResource DefaultForegroundBrushSecondary}"
 							IsChecked="{Binding TransparencyEnabled}">
@@ -295,8 +415,7 @@
                                 
                                 <StackPanel
                                     Orientation="Horizontal"
-                                    Margin="4,0,0,0"
-                                    Spacing="4">
+                                    Margin="4,0,0,0">
                                     
                                     <Grid 
                                         ColumnDefinitions = "32,*"
@@ -313,6 +432,7 @@
                                         </TextBlock>
                                         
                                         <TextBox 
+											IsEnabled="{Binding !IsProcessing}"
                                             Grid.Column="1"
                                             Grid.Row="0"
                                             Margin="6 2 6 2 "
@@ -334,6 +454,7 @@
                                         </TextBlock>
                                         
                                         <TextBox 
+											IsEnabled="{Binding !IsProcessing}"
                                             Grid.Column="1"
                                             Grid.Row="1"
                                             Margin="6 2 6 2 "
@@ -349,14 +470,21 @@
 										Spacing="8"
 										Orientation="Horizontal"
 									    VerticalAlignment="Center">
-										<ToggleButton IsChecked="{Binding UniformScalingEnabled}">
-											<!-- TODO icon here -->
+										<ToggleButton 
+											IsChecked="{Binding UniformScalingEnabled}">
+											<Panel>
+												<Image Classes="uniform-on" Source="{SvgImage /Assets/Svg/lock.svg}"/>
+												<Image Classes="uniform-off" Source="{SvgImage /Assets/Svg/unlock.svg}"/>
+											</Panel>
 										</ToggleButton>
-									    <Button
-									    FontSize="9"
-										Command="{Binding ResetFrameSize}"
-									    Background="{actipro:ThemeResource Container5BackgroundBrush}">
-										    Reset
+										<Button
+											IsEnabled="{Binding !IsProcessing}"
+									        FontSize="9"
+										    Width="24"
+										    Padding="2"
+										    Command="{Binding ResetFrameSize}"
+									        Background="{actipro:ThemeResource Container5BackgroundBrush}">
+											    <Image Classes="uniform-on" Source="{SvgImage /Assets/Svg/arrow-repeat.svg}"/>
 									    </Button>
                                     </StackPanel>
                                 </StackPanel>
