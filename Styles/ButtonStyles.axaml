@@ -1,0 +1,56 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:actipro="http://schemas.actiprosoftware.com/avaloniaui"
+			 xmlns:vm="using:FrameSurgeon.ViewModels"
+			 x:DataType="vm:MainWindowViewModel">
+	
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <!-- Add Controls for Previewer Here -->
+    </Border>
+  </Design.PreviewWith>
+
+  <!-- Add Styles Here -->
+
+	<Style Selector="ToggleButton.Lock">
+		<Setter Property="Padding" Value="4" />
+		<Setter Property="Template">
+			<ControlTemplate>
+				<Border Name="PART_Border"
+						Background="Transparent"
+						BorderBrush="{TemplateBinding Content}"
+						BorderThickness="1">
+					<ContentPresenter
+						Name="PART_ContentPresenter"
+						Content="{TemplateBinding Content}"
+						HorizontalAlignment="Center"
+						VerticalAlignment="Center" />
+				</Border>
+			</ControlTemplate>
+		</Setter>
+	</Style>
+
+	<Style Selector="ToggleButton.Lock Image.uniform-on">
+		<Setter Property="IsVisible" Value="False"/>
+	</Style>
+	<Style Selector="ToggleButton.Lock:checked Image.uniform-on">
+		<Setter Property="IsVisible" Value="True" />
+	</Style>
+	<Style Selector="ToggleButton.Lock Image.uniform-off">
+		<Setter Property="IsVisible" Value="True"/>
+	</Style>
+	<Style Selector="ToggleButton.Lock:checked Image.uniform-off">
+		<Setter Property="IsVisible" Value="False"/>
+	</Style>
+	
+	<Style Selector="Button.Reset">
+		<Setter Property="FontSize" Value="9"/>
+		<Setter Property="Width" Value="24"/>
+		<Setter Property="Padding" Value="2"/>
+		<Setter Property="Background" Value="{actipro:ThemeResource Container5BackgroundBrush}"/>
+		<Setter Property="ToolTip.Tip" Value="{Binding ToolTips.ResetButton}"/>
+		<Setter Property="IsEnabled" Value="{Binding !IsProcessing}"/>
+	</Style>
+</Styles>

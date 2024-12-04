@@ -19,7 +19,6 @@ namespace FrameSurgeon.Services
     {
         public ProcessResult Process(GlobalSettings globalSettings, FlipbookSettings flipbookSettings, GifSettings gifSettings, MainWindowViewModel context)
         {
-            Thread.Sleep(100);
 
             //Set progress bar divisions
             Dispatcher.UIThread.Post(() => {context.MaxProgress = 3;});
@@ -29,8 +28,6 @@ namespace FrameSurgeon.Services
 
             //First division complete
             Dispatcher.UIThread.Post(() => {context.CurrentProgress++;});
-
-            Thread.Sleep(100);
 
             if (validatorResult.Result == Result.Failure)
             {
@@ -94,7 +91,7 @@ namespace FrameSurgeon.Services
                             
                         }
                         step++;
-                        Thread.Sleep(100);
+
                         //Adding to second division
                         Dispatcher.UIThread.Post(() => { context.CurrentProgress += 1.0 / maxProgress; });
                     }
@@ -102,8 +99,8 @@ namespace FrameSurgeon.Services
 
                 // Find whether there's a dot at the end of the output path with some kind of an extention
                 InputOutput.OutputImage(globalSettings.SelectedExtension, globalSettings.OutputPath, canvas);
-                Thread.Sleep(100);
-                //Adding to third
+
+                //Adding to third 
                 Dispatcher.UIThread.Post(() => { context.CurrentProgress++; });
 
             }
@@ -161,7 +158,6 @@ namespace FrameSurgeon.Services
                         canvas.Dispose();
                         step++;
 
-                        Thread.Sleep(100);
                         //Adding to second division
                         Dispatcher.UIThread.Post(() => { context.CurrentProgress += 2.0 / maxProgress; });
 
@@ -203,7 +199,6 @@ namespace FrameSurgeon.Services
 
                     step++;
 
-                    Thread.Sleep(100);
                     //Adding to second division
                     Dispatcher.UIThread.Post(() => { context.CurrentProgress += 2.0 / maxProgress; });
                 }
@@ -242,7 +237,6 @@ namespace FrameSurgeon.Services
                     // Add the frame to the collection
                     collection.Add(image);
 
-                    Thread.Sleep(100);
                     //Adding to second division
                     Dispatcher.UIThread.Post(() => { context.CurrentProgress += 1.0 / maxProgress; });
 
@@ -264,7 +258,6 @@ namespace FrameSurgeon.Services
                 // Write the animated GIF to file
                 InputOutput.OutputImage(globalSettings.SelectedExtension, globalSettings.OutputPath,collection: collection);
 
-                Thread.Sleep(100);
                 //Adding to third
                 Dispatcher.UIThread.Post(() => { context.CurrentProgress++; });
             }

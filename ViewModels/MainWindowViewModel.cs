@@ -51,7 +51,9 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     private int? _maxProgress = 100;
     private double? _currentProgress = 0;
     private string _outputPath;
-    
+
+    public ToolTipInformation ToolTips { get; } = new ToolTipInformation();
+
     public string SelectedExtension { get; set;}
     public List<string> ConvertedExportModes => ValueConverter.GetConvertedExportModes(Enum.GetValues(typeof(ExportMode)).Cast<ExportMode>());
     public List<string> ConvertedExtensions 
@@ -315,6 +317,7 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
 
     public MainWindowViewModel()
     {
+
         SelectedExtension = _convertedExtensions[0];
         
         LoadNewImages = ReactiveCommand.Create(RunLoadNewImages);
