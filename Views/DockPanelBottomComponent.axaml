@@ -1,0 +1,82 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:actipro="http://schemas.actiprosoftware.com/avaloniaui"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             x:Class="FrameSurgeon.Views.DockPanelBottomComponent"
+			 xmlns:vm="using:FrameSurgeon.ViewModels"
+			x:DataType="vm:MainWindowViewModel">
+	
+	<StackPanel
+		Background="{actipro:ThemeResource Container2BackgroundBrush}"
+		Height="36" >
+
+		<ProgressBar
+			IsVisible="{Binding IsProcessing}"
+			Margin="10 12 10 15"
+			Height=""
+			Minimum="0"
+			Maximum="{Binding MaxProgress}"
+			Value="{Binding CurrentProgress}"
+			ShowProgressText="True">
+		</ProgressBar>
+
+		<Grid
+			ColumnDefinitions="Auto,*,Auto,Auto"
+				>
+			<StackPanel Grid.Column="0">
+				<TextBlock
+					ToolTip.Tip="{Binding ToolTips.OutputPathButton}"
+					Margin="6 0 6 0"
+					FontSize="9"
+					FontWeight="Light"
+					Foreground="{actipro:ThemeResource DefaultForegroundBrushTertiary}">
+					Output path:
+				</TextBlock>
+
+				<Button
+					ToolTip.Tip="{Binding ToolTips.OutputPathButton}"
+					IsEnabled="{Binding !IsProcessing}"
+					Margin="4 0 6 2"
+					Padding="0"
+					Command="{Binding SetNewOutputPath}">
+					...
+				</Button>
+
+			</StackPanel>
+
+			<TextBlock
+				ToolTip.Tip="{Binding OutputPath}"
+				Grid.Column="1"
+				Margin="2,0,0,0"
+				FontSize="10"
+				Text="{Binding OutputPath}"
+				VerticalAlignment="Center">
+			</TextBlock>
+
+			<ComboBox
+				ToolTip.Tip="{Binding ToolTips.FormatSetting}"
+				IsEnabled="{Binding !IsProcessing}"
+				Grid.Column="2"
+				ItemsSource="{Binding ConvertedExtensions}"
+				FontSize="12"
+				Margin="4,4,4,2"
+				SelectedItem="{Binding SelectedExtension}"
+				MaxDropDownHeight="100">
+			</ComboBox>
+
+			<Button
+				ToolTip.Tip="{Binding ToolTips.MakeButton}"
+				IsEnabled="{Binding !IsProcessing}"
+				Grid.Column="3"
+				Margin="4,4,4,2"
+				FontSize="9"
+				Command="{Binding ProcessMake}"
+				Background="{actipro:ThemeResource Container5BackgroundBrush}">
+				Make
+			</Button>
+
+		</Grid>
+
+	</StackPanel>
+</UserControl>

@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:actipro="http://schemas.actiprosoftware.com/avaloniaui"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             x:Class="FrameSurgeon.Views.NumberBoxComponent"
+			 xmlns:services="clr-namespace:FrameSurgeon.Services"
+			 xmlns:views="clr-namespace:FrameSurgeon.Views"
+			 xmlns:vm="using:FrameSurgeon.ViewModels"
+			x:DataType="vm:MainWindowViewModel">
+	<UserControl.Resources>
+		<!-- Register the converter -->
+		<services:IntNullableConverter x:Key="IntNullableConverter" />
+	</UserControl.Resources>
+	<TextBox
+		Classes="NumberInput"
+		TextChanged ="TextBox_OnTextChanged"
+		Text="{Binding $parent.Text}">
+		
+	</TextBox>
+</UserControl>
+

@@ -1,0 +1,170 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:actipro="http://schemas.actiprosoftware.com/avaloniaui"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             x:Class="FrameSurgeon.Views.MakeSettingsComponent"
+			 xmlns:services="clr-namespace:FrameSurgeon.Services"
+			 xmlns:views="clr-namespace:FrameSurgeon.Views"
+			 xmlns:vm="using:FrameSurgeon.ViewModels"
+			x:DataType="vm:MainWindowViewModel">
+
+
+	<actipro:ShadowChrome
+				HorizontalAlignment="Stretch"
+				VerticalAlignment="Top">
+
+		<Border
+			Background="{actipro:ThemeResource Container2BackgroundBrush}"
+			BorderBrush="{actipro:ThemeResource Container2BorderBrush}"
+			CornerRadius="6"
+			BorderThickness="1">
+
+			<StackPanel
+				Spacing="4"
+				Margin="4">
+
+				<TextBlock
+					Margin="4 0 4 6 "
+					FontSize="9"
+					FontWeight="Light"
+					Foreground="{actipro:ThemeResource DefaultForegroundBrushTertiary}">
+					Make settings
+				</TextBlock>
+
+				<!-- MAKE MODE -->
+				<ComboBox
+					IsEnabled="{Binding !IsProcessing}"
+					ItemsSource="{Binding ConvertedExportModes}"
+					FontSize="12"
+					SelectedIndex="0"
+					Margin="0,0,0,4"
+					SelectedItem="{Binding SelectedExportMode}"
+                            
+					MaxDropDownHeight="200">
+				</ComboBox>
+
+				<!-- Flip book settings -->
+				<Border
+					IsVisible="{Binding IsFlipBookModeSelected}"
+					Background="{actipro:ThemeResource Container3BackgroundBrush}"
+					BorderBrush="{actipro:ThemeResource Container3BorderBrush}"
+					CornerRadius="6"
+					BorderThickness="1">
+					<StackPanel
+							Orientation="Horizontal"
+							Margin="6,4,0,4"
+							Spacing="4">
+
+						<Grid
+							ColumnDefinitions = "32,*"
+							RowDefinitions = "30,*">
+
+							<TextBlock
+								ToolTip.Tip="{Binding ToolTips.HorSetting}"
+								Grid.Column="0"
+								Grid.Row="0"
+								FontSize="9"
+								FontWeight="Light"
+								VerticalAlignment="Center"
+								Foreground="{actipro:ThemeResource DefaultForegroundBrushTertiary}">
+								Hor.:
+							</TextBlock>
+
+							<views:NumberBoxComponent
+								Text="{Binding FlipbookResolutionHorizontal, Converter={StaticResource IntNullableConverter}, Mode=TwoWay}"
+								ToolTip.Tip="{Binding ToolTips.HorSetting}"
+								Grid.Column="1"
+								Grid.Row="0"/>
+
+							<TextBlock
+								ToolTip.Tip="{Binding ToolTips.VerSetting}"
+								Grid.Column="0"
+								Grid.Row="1"
+								FontSize="9"
+								FontWeight="Light"
+								VerticalAlignment="Center"
+								Foreground="{actipro:ThemeResource DefaultForegroundBrushTertiary}">
+								Ver.:
+							</TextBlock>
+							
+							<views:NumberBoxComponent
+								Text="{Binding FlipbookResolutionVertical, Converter={StaticResource IntNullableConverter}, Mode=TwoWay}"
+								ToolTip.Tip="{Binding ToolTips.VerSetting}"
+								Grid.Column="1"
+								Grid.Row="1"/>
+							
+						</Grid>
+						<StackPanel
+							VerticalAlignment="Center">
+
+							<Button Classes="Reset" Command="{Binding ResetFlipbookResolution}">
+								<Image Classes="uniform-on" Source="{SvgImage /Assets/Svg/arrow-repeat.svg}"/>
+							</Button>
+
+						</StackPanel>
+
+					</StackPanel>
+				</Border>
+
+				<!-- Animated GIF settings -->
+				<Border
+					IsVisible="{Binding IsAnimatedGifModeSelected}"
+					Background="{actipro:ThemeResource Container3BackgroundBrush}"
+					BorderBrush="{actipro:ThemeResource Container3BorderBrush}"
+					CornerRadius="6"
+					BorderThickness="1">
+					<StackPanel Orientation="Vertical">
+						<StackPanel
+								Orientation="Horizontal"
+								Margin="6,4,0,4"
+								Spacing="4">
+
+							<Grid
+								ColumnDefinitions = "32,*"
+								RowDefinitions = "30,*">
+
+								<TextBlock
+									ToolTip.Tip="{Binding ToolTips.FpsSetting}"
+									Grid.Column="0"
+									Grid.Row="0"
+									FontSize="9"
+									FontWeight="Light"
+									VerticalAlignment="Center"
+									Foreground="{actipro:ThemeResource DefaultForegroundBrushTertiary}">
+									FPS.:
+								</TextBlock>
+							
+								<views:NumberBoxComponent
+									Text="{Binding GifFps, Converter={StaticResource IntNullableConverter}, Mode=TwoWay}"
+									ToolTip.Tip="{Binding ToolTips.FpsSetting}"
+									Grid.Column="1"
+									Grid.Row="0"/>
+								
+							</Grid>
+							<StackPanel
+								VerticalAlignment="Center">
+
+								<Button Classes="Reset" Command="{Binding ResetGifFps}">
+									<Image Classes="uniform-on" Source="{SvgImage /Assets/Svg/arrow-repeat.svg}"/>
+								</Button>
+
+							</StackPanel>
+
+						</StackPanel>
+						<CheckBox
+							ToolTip.Tip="{Binding ToolTips.LoopingSetting}"
+							IsEnabled="{Binding !IsProcessing}"
+							Margin="4 0 0 6"
+							FontSize="12"
+							Foreground="{actipro:ThemeResource DefaultForegroundBrushSecondary}"
+							IsChecked="{Binding GifLooping}">
+							Looping
+						</CheckBox>
+					</StackPanel>
+				</Border>
+
+			</StackPanel>
+		</Border>
+	</actipro:ShadowChrome>
+</UserControl>
