@@ -447,8 +447,8 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
                 Looping = GifLooping
             };
 
-            Processor processor = new Processor();
-            result = processor.Process(globalSettings, flipbookSettings, gifSettings, this);
+            Processor processor = new Processor(globalSettings, flipbookSettings, gifSettings, this);
+            result = processor.Process();
 
             Dispatcher.UIThread.Post(() => IsProcessing = false);
             
@@ -489,6 +489,13 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
         if (LoadedFiles.Count() <= 0)
         { return; }
         //First "leading" frame
+
+        // Check if the file still exists
+        if (!System.IO.File.Exists(LoadedFiles[0]))
+        {
+            return;
+        }
+
         MagickImage firstImage = new MagickImage(LoadedFiles[0]);
 
         FrameSizeWidth = (int)firstImage.Width;

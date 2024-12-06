@@ -14,7 +14,7 @@ namespace FrameSurgeon.Services
     {
         public static ProcessResult IsMakeAllowed(GlobalSettings globalSettings, FlipbookSettings flipbookSettings)
         {
-
+            // Run a specific set of checks and functions for each of the Steps
             foreach (var step in Enum.GetValues<Step>())
             {
                 ProcessResult result = step switch
