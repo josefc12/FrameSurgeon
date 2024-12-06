@@ -8,12 +8,12 @@
 		xmlns:views="clr-namespace:FrameSurgeon.Views"
 		xmlns:svg="clr-namespace:Avalonia.Svg;assembly=Avalonia.Svg"
         Width="584" Height="530"
+		MinWidth="584" MinHeight="530"
         x:Class="FrameSurgeon.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
         Title="Frame Surgeon 2"
-		WindowStartupLocation="CenterScreen"
-	    TransparencyLevelHint="Transparent">
+		WindowStartupLocation="CenterScreen">
         
 
     <Design.DataContext>
@@ -22,7 +22,7 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-	<!-- Core color changes -->
+	<!-- Selection color changes -->
     <Window.Styles>
         <Style Selector=":selected /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="#3baea2"/>

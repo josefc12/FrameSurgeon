@@ -1,0 +1,67 @@
+<UserControl
+			xmlns="https://github.com/avaloniaui"
+			xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			xmlns:actipro="http://schemas.actiprosoftware.com/avaloniaui"
+			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			x:Class="FrameSurgeon.Views.AnimatedGifSettingsComponent"
+			xmlns:views="clr-namespace:FrameSurgeon.Views"
+			xmlns:vm="using:FrameSurgeon.ViewModels"
+			x:DataType="vm:MainWindowViewModel">
+
+	<Border
+		IsVisible="{Binding IsAnimatedGifModeSelected}"
+		Background="{actipro:ThemeResource Container3BackgroundBrush}"
+		BorderBrush="{actipro:ThemeResource Container3BorderBrush}"
+		CornerRadius="6"
+		BorderThickness="1">
+		<StackPanel Orientation="Vertical">
+			<StackPanel
+					Orientation="Horizontal"
+					Margin="6,4,0,4"
+					Spacing="4">
+
+				<Grid
+					ColumnDefinitions = "32,*"
+					RowDefinitions = "30,*">
+
+					<TextBlock
+						ToolTip.Tip="{Binding ToolTips.FpsSetting}"
+						Grid.Column="0"
+						Grid.Row="0"
+						FontSize="9"
+						FontWeight="Light"
+						VerticalAlignment="Center"
+						Foreground="{actipro:ThemeResource DefaultForegroundBrushTertiary}">
+						FPS.:
+					</TextBlock>
+
+					<views:NumberBoxComponent
+						Text="{Binding GifFps, Converter={StaticResource IntNullableConverter}, Mode=TwoWay}"
+						ToolTip.Tip="{Binding ToolTips.FpsSetting}"
+						Grid.Column="1"
+						Grid.Row="0"/>
+
+				</Grid>
+				<StackPanel
+					VerticalAlignment="Center">
+
+					<Button Classes="Reset" Command="{Binding ResetGifFps}">
+						<Image Classes="uniform-on" Source="{SvgImage /Assets/Svg/arrow-repeat.svg}"/>
+					</Button>
+
+				</StackPanel>
+
+			</StackPanel>
+			<CheckBox
+				ToolTip.Tip="{Binding ToolTips.LoopingSetting}"
+				IsEnabled="{Binding !IsProcessing}"
+				Margin="4 0 0 6"
+				FontSize="12"
+				Foreground="{actipro:ThemeResource DefaultForegroundBrushSecondary}"
+				IsChecked="{Binding GifLooping}">
+				Looping
+			</CheckBox>
+		</StackPanel>
+	</Border>
+</UserControl>

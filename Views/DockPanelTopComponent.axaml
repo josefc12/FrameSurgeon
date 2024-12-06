@@ -1,15 +1,15 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-			 xmlns:actipro="http://schemas.actiprosoftware.com/avaloniaui"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             x:Class="FrameSurgeon.Views.DockPanelTopComponent"
-			 xmlns:vm="using:FrameSurgeon.ViewModels"
+<UserControl 
+			xmlns="https://github.com/avaloniaui"
+			xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			xmlns:actipro="http://schemas.actiprosoftware.com/avaloniaui"
+			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			x:Class="FrameSurgeon.Views.DockPanelTopComponent"
+			xmlns:vm="using:FrameSurgeon.ViewModels"
 			x:DataType="vm:MainWindowViewModel">
 	<Grid
 		ColumnDefinitions="*,*"
-		Background="{actipro:ThemeResource Container2BackgroundBrush}"
-		>
+		Background="{actipro:ThemeResource Container2BackgroundBrush}">
 
 		<Button
 			ToolTip.Tip="{Binding ToolTips.LoadButton}"

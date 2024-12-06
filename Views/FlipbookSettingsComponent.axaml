@@ -1,0 +1,74 @@
+<UserControl
+			xmlns="https://github.com/avaloniaui"
+			xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			xmlns:actipro="http://schemas.actiprosoftware.com/avaloniaui"
+			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			x:Class="FrameSurgeon.Views.FlipbookSettingsComponent"
+			xmlns:views="clr-namespace:FrameSurgeon.Views"
+			xmlns:vm="using:FrameSurgeon.ViewModels"
+			x:DataType="vm:MainWindowViewModel">
+
+	<Border
+		IsVisible="{Binding IsFlipBookModeSelected}"
+		Background="{actipro:ThemeResource Container3BackgroundBrush}"
+		BorderBrush="{actipro:ThemeResource Container3BorderBrush}"
+		CornerRadius="6"
+		BorderThickness="1">
+		<StackPanel
+				Orientation="Horizontal"
+				Margin="6,4,0,4"
+				Spacing="4">
+
+			<Grid
+				ColumnDefinitions = "32,*"
+				RowDefinitions = "30,*">
+
+				<TextBlock
+					ToolTip.Tip="{Binding ToolTips.HorSetting}"
+					Grid.Column="0"
+					Grid.Row="0"
+					FontSize="9"
+					FontWeight="Light"
+					VerticalAlignment="Center"
+					Foreground="{actipro:ThemeResource DefaultForegroundBrushTertiary}">
+					Hor.:
+				</TextBlock>
+
+				<views:NumberBoxComponent
+					Text="{Binding FlipbookResolutionHorizontal, Converter={StaticResource IntNullableConverter}, Mode=TwoWay}"
+					ToolTip.Tip="{Binding ToolTips.HorSetting}"
+					Grid.Column="1"
+					Grid.Row="0"/>
+
+				<TextBlock
+					ToolTip.Tip="{Binding ToolTips.VerSetting}"
+					Grid.Column="0"
+					Grid.Row="1"
+					FontSize="9"
+					FontWeight="Light"
+					VerticalAlignment="Center"
+					Foreground="{actipro:ThemeResource DefaultForegroundBrushTertiary}">
+					Ver.:
+				</TextBlock>
+
+				<views:NumberBoxComponent
+					Text="{Binding FlipbookResolutionVertical, Converter={StaticResource IntNullableConverter}, Mode=TwoWay}"
+					ToolTip.Tip="{Binding ToolTips.VerSetting}"
+					Grid.Column="1"
+					Grid.Row="1"/>
+
+			</Grid>
+			<StackPanel
+				VerticalAlignment="Center">
+
+				<Button Classes="Reset" Command="{Binding ResetFlipbookResolution}">
+					<Image Classes="uniform-on" Source="{SvgImage /Assets/Svg/arrow-repeat.svg}"/>
+				</Button>
+
+			</StackPanel>
+
+		</StackPanel>
+	</Border>
+	
+</UserControl>

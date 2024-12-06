@@ -125,7 +125,6 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
 
                 OnPropertyChanged(nameof(IsAnimatedGifModeSelected));
 
-
             }
         }
     }
@@ -271,7 +270,6 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
         {
             if (_gifFps != value && int.TryParse(value.ToString(), out int x))
             {
-                Debug.WriteLine("Command ran");
                 _gifFps = value;
                 OnPropertyChanged(nameof(GifFps));
             }
@@ -374,8 +372,6 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
         SetFlipbookResolution();
         SetFrameSize();
 
-        Debug.WriteLine("Images loaded");
-
     }
     private void RunRemoveFrame(string itemPath)
     {
@@ -390,22 +386,18 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
         SetFlipbookResolution();
         SetFrameSize();
 
-        Debug.WriteLine("Frames removed");
     }
     private void RunResetFlipbookResolution()
     {
         SetFlipbookResolution();
-        Debug.WriteLine("Reset flipbook resolution ran");
     }
     private void RunResetFrameSize()
     {
         SetFrameSize();
-        Debug.WriteLine("Reset frame size ran");
     }
     private void RunResetGifFps()
     {
         GifFps = 30;
-        Debug.WriteLine("Reset gif fps ran");
     }
     private async void RunSetNewOutputPath()
     {
@@ -421,7 +413,6 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
             throw new Exception($"{e.Message}");
         }
 
-        Debug.WriteLine("Set new output path ran");
     }
     private async Task RunProcessMake()
     {
@@ -484,7 +475,6 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
 
         }
 
-        Debug.WriteLine("Process ran");
     }
 
     private void SetFlipbookResolution()

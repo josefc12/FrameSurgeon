@@ -1,0 +1,95 @@
+<UserControl
+			xmlns="https://github.com/avaloniaui"
+			xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			xmlns:actipro="http://schemas.actiprosoftware.com/avaloniaui"
+			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			x:Class="FrameSurgeon.Views.FrameSizeSettingsComponent"
+			xmlns:views="clr-namespace:FrameSurgeon.Views"
+			xmlns:vm="using:FrameSurgeon.ViewModels"
+			x:DataType="vm:MainWindowViewModel">
+
+	<Border
+		Background="{actipro:ThemeResource Container3BackgroundBrush}"
+		BorderBrush="{actipro:ThemeResource Container3BorderBrush}"
+		CornerRadius="6"
+		BorderThickness="1">
+
+		<StackPanel
+			Spacing="4"
+			Margin="4">
+
+			<TextBlock
+				Margin="6 4 4 6 "
+				Foreground="{actipro:ThemeResource DefaultForegroundBrushSecondary}"
+				FontSize="12">
+				Frame size:
+			</TextBlock>
+
+			<StackPanel
+				Orientation="Horizontal"
+				Margin="4,0,0,0">
+
+				<Grid
+					ColumnDefinitions = "32,*"
+					RowDefinitions = "30,*">
+
+					<TextBlock
+						ToolTip.Tip="{Binding ToolTips.WidthSetting}"
+						Grid.Column="0"
+						Grid.Row="0"
+						FontSize="9"
+						FontWeight="Light"
+						VerticalAlignment="Center"
+						Foreground="{actipro:ThemeResource DefaultForegroundBrushTertiary}">
+						Width.:
+					</TextBlock>
+
+					<views:NumberBoxComponent
+						Text="{Binding FrameSizeWidth, Converter={StaticResource IntNullableConverter}, Mode=TwoWay}"
+						ToolTip.Tip="{Binding ToolTips.WidthSetting}"
+						Grid.Column="1"
+						Grid.Row="0" />
+
+					<TextBlock
+						ToolTip.Tip="{Binding ToolTips.HeightSetting}"
+						Grid.Column="0"
+						Grid.Row="1"
+						FontSize="9"
+						FontWeight="Light"
+						VerticalAlignment="Center"
+						Foreground="{actipro:ThemeResource DefaultForegroundBrushTertiary}">
+						Height.:
+					</TextBlock>
+
+					<views:NumberBoxComponent
+						Text="{Binding FrameSizeHeight, Converter={StaticResource IntNullableConverter}, Mode=TwoWay}"
+						ToolTip.Tip="{Binding ToolTips.HeightSetting}"
+						Grid.Column="1"
+						Grid.Row="1"/>
+
+				</Grid>
+				<StackPanel
+					Spacing="8"
+					Orientation="Horizontal"
+					VerticalAlignment="Center">
+					<ToggleButton
+						Classes="Lock"
+						ToolTip.Tip="{Binding ToolTips.UniformScalingSetting}"
+						IsChecked="{Binding UniformScalingEnabled}">
+						<Panel>
+							<Image Classes="uniform-on" Source="{SvgImage /Assets/Svg/lock.svg}"/>
+							<Image Classes="uniform-off" Source="{SvgImage /Assets/Svg/unlock.svg}"/>
+						</Panel>
+					</ToggleButton>
+
+					<Button Classes="Reset" Command="{Binding ResetFrameSize}">
+						<Image Classes="uniform-on" Source="{SvgImage /Assets/Svg/arrow-repeat.svg}"/>
+					</Button>
+
+				</StackPanel>
+			</StackPanel>
+		</StackPanel>
+	</Border>
+	
+</UserControl>

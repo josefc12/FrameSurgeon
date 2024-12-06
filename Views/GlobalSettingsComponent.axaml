@@ -4,23 +4,25 @@
 			xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			xmlns:actipro="http://schemas.actiprosoftware.com/avaloniaui"
 			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-			x:Class="FrameSurgeon.Views.MakeSettingsComponent"
+			x:Class="FrameSurgeon.Views.GlobalSettingsComponent"
 			xmlns:views="clr-namespace:FrameSurgeon.Views"
 			xmlns:vm="using:FrameSurgeon.ViewModels"
 			x:DataType="vm:MainWindowViewModel">
 
+
 	<actipro:ShadowChrome
-				HorizontalAlignment="Stretch"
-				VerticalAlignment="Top">
+		HorizontalAlignment="Stretch"
+		VerticalAlignment="Top">
 
 		<Border
 			Background="{actipro:ThemeResource Container2BackgroundBrush}"
 			BorderBrush="{actipro:ThemeResource Container2BorderBrush}"
 			CornerRadius="6"
+			Margin="0,4,0,0"
 			BorderThickness="1">
 
 			<StackPanel
-				Spacing="4"
+				Spacing="8"
 				Margin="4">
 
 				<TextBlock
@@ -28,27 +30,21 @@
 					FontSize="9"
 					FontWeight="Light"
 					Foreground="{actipro:ThemeResource DefaultForegroundBrushTertiary}">
-					Make settings
+					Global settings
 				</TextBlock>
 
-				<!-- MAKE MODE -->
-				<ComboBox
+				<CheckBox
+					ToolTip.Tip="{Binding ToolTips.TransparentSetting}"
 					IsEnabled="{Binding !IsProcessing}"
-					ItemsSource="{Binding ConvertedExportModes}"
 					FontSize="12"
-					SelectedIndex="0"
-					Margin="0,0,0,4"
-					SelectedItem="{Binding SelectedExportMode}"
-                            
-					MaxDropDownHeight="200">
-				</ComboBox>
+					Foreground="{actipro:ThemeResource DefaultForegroundBrushSecondary}"
+					IsChecked="{Binding TransparencyEnabled}">
+					Transparency
+				</CheckBox>
 
-				<!-- Flip book settings -->
-				<views:FlipbookSettingsComponent/>
-
-				<!-- Animated GIF settings -->
-				<views:AnimatedGifSettingsComponent/>
-
+				<!-- SIZE settings card -->
+				<views:FrameSizeSettingsComponent/>
+				
 			</StackPanel>
 		</Border>
 	</actipro:ShadowChrome>
