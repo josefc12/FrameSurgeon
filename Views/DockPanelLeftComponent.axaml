@@ -37,13 +37,13 @@
 					Please start by loading your frames.
 				</TextBlock>
 				
-				<ItemsControl ItemsSource="{Binding LoadedFiles}"  FontSize="12">
+				<ItemsControl ItemsSource="{Binding LoadedFilesNames}"  FontSize="12">
 					<ItemsControl.ItemTemplate>
 						<DataTemplate>
 							<Grid ColumnDefinitions="*,Auto">
 								
 								<!--The name of the image/path-->
-								<TextBlock Text="{Binding}" Grid.Column="0" TextWrapping="NoWrap" VerticalAlignment="Center" />
+								<TextBlock Margin="8 0 0 0 " Text="{Binding}" Grid.Column="0" TextWrapping="NoWrap" VerticalAlignment="Center" />
 								
 								<!--Remove image-->
 								<Button

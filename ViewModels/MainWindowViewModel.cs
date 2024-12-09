@@ -43,6 +43,7 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
 
     private readonly App _app;
     private ObservableCollection<string> _loadedFiles = new ObservableCollection<string>();
+    private ObservableCollection<string> _loadedFilesNames = new ObservableCollection<string>();
     private ExportMode _selectedExportMode;
     private List<string> _convertedExtensions = ValueConverter.GetConvertedExtensions(ExportMode.Flipbook);
     private bool _isFlipBookModeSelected = true;
@@ -212,6 +213,18 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
             }
         }
     }
+    public ObservableCollection<string> LoadedFilesNames
+    {
+        get => _loadedFilesNames;
+        set
+        {
+            if (_loadedFilesNames != value)
+            {
+                _loadedFilesNames = value;
+                OnPropertyChanged(nameof(LoadedFilesNames));
+            }
+        }
+    }
 
     public int? FlipbookResolutionHorizontal
     {
@@ -362,12 +375,18 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
             var filePaths = await InputOutput.DoOpenFilePickerAsync();
             if (!filePaths.Any()) return;
             LoadedFiles.Clear();
+
             foreach (var filePath in filePaths)
             {
                 LoadedFiles.Add(filePath);
             }
 
-            if (LoadedFiles.Count > 0)
+            foreach (var filePath in filePaths)
+            {
+                LoadedFilesNames.Add(Path.GetFileName(filePath));
+            }
+
+            if (filePaths.Count() > 0)
             {
                 FrameNotLoaded = false;
             }
@@ -386,6 +405,7 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     private void RunRemoveFrame(string itemPath)
     {
         LoadedFiles.Remove(itemPath);
+        LoadedFilesNames.Remove(Path.GetFileName(itemPath));
 
         if (LoadedFiles.Count == 0)
         {
