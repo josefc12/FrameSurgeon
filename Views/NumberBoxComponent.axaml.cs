@@ -27,8 +27,11 @@ public partial class NumberBoxComponent : UserControl
     {
         if (sender is TextBox textBox)
         {
+
+            string text = textBox.Text ?? string.Empty;
+
             // Filter the text to allow only numeric characters
-            string newText = new string(textBox.Text.Where(char.IsDigit).ToArray());
+            string newText = new string(text.Where(char.IsDigit).ToArray());
 
             // Update the TextBox only if there are changes
             if (textBox.Text != newText)

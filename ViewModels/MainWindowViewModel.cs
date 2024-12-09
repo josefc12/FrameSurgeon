@@ -17,6 +17,13 @@ using System.Globalization;
 using ImageMagick;
 using System.Threading.Tasks;
 using Avalonia.Threading;
+using System.Runtime;
+using Avalonia.Controls;
+using Avalonia.Media.Imaging;
+using System.IO;
+using Microsoft.VisualBasic;
+using Avalonia;
+using Avalonia.Media;
 
 namespace FrameSurgeon.ViewModels;
 
@@ -30,9 +37,11 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     public ReactiveCommand<Unit, Unit> SetNewOutputPath { get; }
     public ReactiveCommand<Unit, Unit> ProcessMake { get; }
     public ReactiveCommand<Unit, Unit> OpenSettings { get; }
+    public ReactiveCommand<Unit, Unit> PreviewResult { get; }
 
     public Interaction<DialogViewModel, MainWindowViewModel> ShowDialog { get;} = new Interaction<DialogViewModel, MainWindowViewModel>();
 
+    private readonly App _app;
     private ObservableCollection<string> _loadedFiles = new ObservableCollection<string>();
     private ExportMode _selectedExportMode;
     private List<string> _convertedExtensions = ValueConverter.GetConvertedExtensions(ExportMode.Flipbook);
@@ -314,9 +323,9 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
         }
     }
 
-    public MainWindowViewModel()
+    public MainWindowViewModel(App app)
     {
-
+        _app = app;
         SelectedExtension = _convertedExtensions[0];
         
         LoadNewImages = ReactiveCommand.Create(RunLoadNewImages);
@@ -326,6 +335,7 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
         ResetGifFps = ReactiveCommand.Create(RunResetGifFps);
         SetNewOutputPath = ReactiveCommand.Create(RunSetNewOutputPath);
         ProcessMake = ReactiveCommand.CreateFromTask(RunProcessMake);
+        PreviewResult = ReactiveCommand.CreateFromTask(RunPreviewResult);
 
         OpenSettings = ReactiveCommand.Create(RunOpenSettings);
        
@@ -477,6 +487,86 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
 
     }
 
+    private async Task RunPreviewResult()
+    {
+
+        GlobalSettings globalSettings = new GlobalSettings()
+        {
+            ExportMode = ValueConverter.GetExportModeAsEnumValue(SelectedExportMode),
+            LoadedFiles = LoadedFiles.ToList(),
+            OutputPath = OutputPath,
+            SelectedExtension = SelectedExtension,
+            TransparencyEnabled = TransparencyEnabled,
+            FrameSizeHeight = FrameSizeHeight ?? 0,
+            FrameSizeWidth = FrameSizeWidth ?? 0,
+        };
+
+        FlipbookSettings flipbookSettings = new FlipbookSettings()
+        {
+            hResolution = FlipbookResolutionHorizontal ?? 0,
+            vResolution = FlipbookResolutionVertical ?? 0,
+        };
+
+        GifSettings gifSettings = new GifSettings()
+        {
+            Fps = GifFps ?? 30,
+            Looping = GifLooping
+        };
+
+        Processor processor = new Processor(globalSettings, flipbookSettings, gifSettings, this);
+        
+        var previewResult = processor.Preview();
+
+        if (previewResult != null && previewResult.Result == Result.Failure)
+        {
+            // Show error message
+            var warning = new DialogViewModel(DialogType.Warning, previewResult.Message);
+            await ShowDialog.Handle(warning);
+        }
+        else if (previewResult != null)
+        {
+            // Display the resulted preview
+            using (var memoryStream = new MemoryStream())
+            {
+
+                if (previewResult.Image != null)
+                {
+
+                    await DisplayImage(previewResult.Image);
+                    
+                }
+                else if (previewResult.Collection != null)
+                {
+                    try
+                    {
+                        await DisplayAnimatedGif(previewResult.Collection);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Exception: {ex.Message}\n{ex.StackTrace}");
+                        var failure = new DialogViewModel(DialogType.Error, ex.Message);
+                        await ShowDialog.Handle(failure);
+                    }
+
+                }
+                else
+                {
+                    var failure = new DialogViewModel(DialogType.Error, "Fatal error");
+                    await ShowDialog.Handle(failure);
+                }
+                
+            }
+
+        }
+        else
+        {
+            var failure = new DialogViewModel(DialogType.Error, "Fatal error");
+            await ShowDialog.Handle(failure);
+
+        }
+
+    }
+
     private void SetFlipbookResolution()
     {
         FlipbookResolution fResolution = Calculator.CalculateFlipbookDimensions(LoadedFiles.Count);
@@ -505,4 +595,98 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
 
     }
 
+    private async Task DisplayAnimatedGif(MagickImageCollection collection)
+    {
+        var frames = collection.Select(frame =>
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                frame.Write(memoryStream, MagickFormat.Png);
+                memoryStream.Seek(0, SeekOrigin.Begin);
+                return new Avalonia.Media.Imaging.Bitmap(memoryStream);
+            }
+        }).ToList();
+
+        if (frames.Count == 0)
+        {
+            var failure = new DialogViewModel(DialogType.Error, "No frames found in GIF.");
+            await ShowDialog.Handle(failure);
+            return;
+        }
+
+        var imageControl = new Avalonia.Controls.Image
+        {
+            Stretch = Avalonia.Media.Stretch.Uniform
+        };
+
+        var window = new Window
+        {
+            Title = "Animated GIF Preview",
+            Width = frames[0].PixelSize.Width + 200,
+            Height = frames[0].PixelSize.Height + 40,
+            Content = new Border
+            {
+                Padding = new Thickness(20),
+                Background = Brushes.White,
+                Child = imageControl
+            }
+        };
+
+        _app.RegisterPreviewWindow(window);
+
+        window.Show();
+        
+        // Animate the GIF frames
+        _ = Task.Run(async () =>
+        {
+            while (true)
+            {
+                foreach (var frame in frames)
+                {
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        imageControl.Source = frame;
+                    });
+
+                    // Use frame delay from the GIF metadata
+                    var delay = collection[frames.IndexOf(frame)].AnimationDelay * 10; // Convert to milliseconds
+                    await Task.Delay((int)(delay > 0 ? delay : 100)); // Default to 100ms if no delay is specified
+                }
+            }
+        });
+        
+    }
+    private Task DisplayImage(MagickImage image)
+    {
+        using (var memoryStream = new MemoryStream())
+        {
+            image.Write(memoryStream, MagickFormat.Png);
+            memoryStream.Seek(0, SeekOrigin.Begin);
+
+            var avaloniaBitmap = new Bitmap(memoryStream);
+
+            var window = new Window
+            {
+                Title = "Image Preview",
+                Width = avaloniaBitmap.PixelSize.Width +200,
+                Height = avaloniaBitmap.PixelSize.Height +40,
+                Content = new Border
+                {
+                    Padding = new Thickness(20),
+                    Background = Brushes.White,
+                    Child = new Image
+                    {
+                        Source = avaloniaBitmap,
+                        Stretch = Stretch.Uniform
+                    }
+                }
+            };
+
+            _app.RegisterPreviewWindow(window);
+
+            window.Show();
+        }
+
+        return Task.CompletedTask;
+    }
 }

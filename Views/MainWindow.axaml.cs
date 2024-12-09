@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Avalonia.ReactiveUI;
 using Avalonia.Input;
 using System.Reactive;
+using System.Diagnostics;
 
 namespace FrameSurgeon.Views;
 
@@ -17,6 +18,8 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         InitializeComponent();
         this.WhenActivated(
             action =>action(ViewModel!.ShowDialog.RegisterHandler(DoShowDialogAsync)));
+
+        this.Closing += MainWindow_Closing;
     }
 
     private async Task DoShowDialogAsync(InteractionContext<DialogViewModel,
@@ -44,7 +47,16 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
             e.Handled = true; // Prevent non-numeric key presses (letters and special chars)
         }
     }
-
-
+    private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+    {
+        // Close all preview windows before the main window closes
+        if (App.Current is App app)
+        {
+            foreach (var previewWindow in app.PreviewWindows.ToList())
+            {
+                previewWindow.Close();
+            }
+        }
+    }
 
 }

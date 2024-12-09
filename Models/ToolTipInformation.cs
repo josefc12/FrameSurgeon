@@ -13,6 +13,7 @@ namespace FrameSurgeon.Models
         public static string ResetButton { get; } = "Refresh/reset associated values.";
         public static string OutputPathButton { get; } = "Select the output destination for the result(s).";
         public static string MakeButton { get; } = "Make the result and save it at the selected destination under the selected format.";
+        public static string PreviewButton { get; } = "Preview the result.";
 
         // SETTINGS
         public static string HorSetting { get; } = "Amount of frames on the horizontal axis.";

@@ -6,6 +6,7 @@ using FrameSurgeon.ViewModels;
 using ImageMagick;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -76,6 +77,7 @@ namespace FrameSurgeon.Classes
             }
             else if (collection != null)
             {
+                Debug.WriteLine(collection.Count());
                 collection.Write(finalPath);
             }
             

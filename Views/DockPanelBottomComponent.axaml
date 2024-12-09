@@ -24,7 +24,7 @@
 			ShowProgressText="True">
 		</ProgressBar>
 
-		<Grid ColumnDefinitions="Auto,*,Auto,Auto">
+		<Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto">
 			
 			<StackPanel Grid.Column="0">
 				
@@ -69,9 +69,22 @@
 			</ComboBox>
 
 			<Button
+				Grid.Column="3"
+				ToolTip.Tip="{Binding ToolTips.PreviewButton}"
+				IsEnabled="{Binding !IsProcessing}"
+				Margin="4,4,4,2"
+				Padding="4"
+				Width="28"
+				FontSize="9"
+				Command="{Binding PreviewResult}"
+				Background="{actipro:ThemeResource Container5BackgroundBrush}">
+				<Image Classes="uniform-on" Source="{SvgImage /Assets/Svg/eye.svg}"/>
+			</Button>
+
+			<Button
 				ToolTip.Tip="{Binding ToolTips.MakeButton}"
 				IsEnabled="{Binding !IsProcessing}"
-				Grid.Column="3"
+				Grid.Column="4"
 				Margin="4,4,4,2"
 				FontSize="9"
 				Command="{Binding ProcessMake}"
