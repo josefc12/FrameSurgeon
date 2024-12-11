@@ -373,7 +373,7 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     // COMMAND FUNCTIONS
     private async void RunLoadNewImages(bool isAdding)
     {
-        Debug.WriteLine(isAdding);
+        Console.WriteLine(isAdding);
         // Load paths
         try
         {
@@ -382,7 +382,8 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
             if (!isAdding)
             {
                 LoadedFiles.Clear();
-                Debug.WriteLine("Cleared");
+                LoadedFilesNames.Clear();
+                Console.WriteLine("Cleared");
             }
             foreach (var filePath in filePaths)
             {
@@ -399,6 +400,15 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
                 FrameNotLoaded = false;
             }
 
+            foreach (var aFile in LoadedFiles)
+            {
+                Console.WriteLine(aFile + "File in LoadedFiles");
+            }
+            foreach (var aFile in LoadedFilesNames)
+            {
+                Console.WriteLine(aFile.Name + "File in LoadedFilesNames");
+            }
+
         }
         catch (Exception e)
         {
@@ -412,9 +422,6 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     }
     private void RunRemoveFrame(string itemPath)
     {
-
-
-
 
         var itemToRemove = LoadedFilesNames.FirstOrDefault(f => f.Name == Path.GetFileName(itemPath));
         if (itemToRemove != null)
