@@ -88,14 +88,23 @@ namespace FrameSurgeon.Services
 
                 if (result.Result == Result.Failure)
                 {
+                    result.Image?.Dispose();
                     return new ProcessResult(Result.Failure, result.Message);
                 }
 
                 var canvas = result.Image;
 
                 // Save/Export/Write the new image
-                InputOutput.OutputImage(_globalSettings.SelectedExtension, _globalSettings.OutputPath, canvas);
-
+                try
+                {
+                    InputOutput.OutputImage(_globalSettings.SelectedExtension, _globalSettings.OutputPath, canvas);
+                }
+                finally
+                {
+                    canvas?.Dispose();
+                    result.Image?.Dispose();
+                }
+                
                 //Adding to third 
                 Dispatcher.UIThread.Post(() => { _context.CurrentProgress++; });
 
@@ -123,53 +132,53 @@ namespace FrameSurgeon.Services
                 }
 
                 //First image in the loaded images
-                MagickImage image = new MagickImage(_globalSettings.LoadedFiles[0]);
-
-                int cropSizeHorizontal = (int)image.Width / _flipbookSettings.hResolution;
-                int cropSizeVertical = (int)image.Height / _flipbookSettings.vResolution;
-
-                //Max amount from 2nd progress bar division
-                var maxProgress = _flipbookSettings.vResolution * _flipbookSettings.hResolution;
-
-                int step = 0;
-                // Loop through rows and columns
-                for (int row = 0; row < _flipbookSettings.vResolution; row++)
+                using (var image = new MagickImage(_globalSettings.LoadedFiles[0]))
                 {
-                    for (int col = 0; col < _flipbookSettings.hResolution; col++)
+
+                    int cropSizeHorizontal = (int)image.Width / _flipbookSettings.hResolution;
+                    int cropSizeVertical = (int)image.Height / _flipbookSettings.vResolution;
+
+                    //Max amount from 2nd progress bar division
+                    var maxProgress = _flipbookSettings.vResolution * _flipbookSettings.hResolution;
+
+                    int step = 0;
+                    // Loop through rows and columns
+                    for (int row = 0; row < _flipbookSettings.vResolution; row++)
                     {
-                        int x = col * cropSizeHorizontal;
-                        int y = row * cropSizeVertical;
-                        // Area of the pixels to be extracted
-                        var cropArea = new MagickGeometry(x, y, (uint)cropSizeHorizontal, (uint)cropSizeVertical);
+                        for (int col = 0; col < _flipbookSettings.hResolution; col++)
+                        {
+                            int x = col * cropSizeHorizontal;
+                            int y = row * cropSizeVertical;
+                            // Area of the pixels to be extracted
+                            var cropArea = new MagickGeometry(x, y, (uint)cropSizeHorizontal, (uint)cropSizeVertical);
 
-                        MagickImage croppedImage = (MagickImage)image.Clone();
-                        croppedImage.Crop(cropArea);
+                            using (var croppedImage = (MagickImage)image.Clone())
+                            {
+                                croppedImage.Crop(cropArea);
 
-                        //Re-scale if applicable
-                        ResizeFrame(croppedImage, (uint)_globalSettings.FrameSizeWidth, (uint)_globalSettings.FrameSizeHeight);
+                                //Re-scale if applicable
+                                ResizeFrame(croppedImage, (uint)_globalSettings.FrameSizeWidth, (uint)_globalSettings.FrameSizeHeight);
 
-                        // Create a new image/canvas to paste the pixels onto
-                        MagickColor color = _globalSettings.TransparencyEnabled == true ? MagickColors.Transparent : MagickColors.Black;
+                                // Create a new image/canvas to paste the pixels onto
+                                MagickColor color = _globalSettings.TransparencyEnabled == true ? MagickColors.Transparent : MagickColors.Black;
 
-                        //Create canvas
-                        MagickImage canvas = new MagickImage(color, croppedImage.Width, croppedImage.Height);
+                                //Create canvas
+                                using (var canvas = new MagickImage(color, croppedImage.Width, croppedImage.Height))
+                                {
+                                    canvas.Composite(croppedImage, 0, 0, CompositeOperator.Over);
+                                    InputOutput.OutputImage(_globalSettings.SelectedExtension, _globalSettings.OutputPath, image: canvas, null, step);
+                                }
 
+                            }
 
-                        canvas.Composite(croppedImage, 0, 0, CompositeOperator.Over);
+                            step++;
 
-                        InputOutput.OutputImage(_globalSettings.SelectedExtension, _globalSettings.OutputPath, image: canvas, null, step);
-                        
-                        canvas.Dispose();
-                        step++;
+                            //Adding to second division
+                            Dispatcher.UIThread.Post(() => { _context.CurrentProgress += 2.0 / maxProgress; });
 
-                        //Adding to second division
-                        Dispatcher.UIThread.Post(() => { _context.CurrentProgress += 2.0 / maxProgress; });
-
+                        }
                     }
                 }
-
-                image.Dispose();
-
             }
             catch (Exception e)
             {
@@ -186,8 +195,8 @@ namespace FrameSurgeon.Services
 
                 //Max amount from 2nd progress bar division
                 var maxProgress = _globalSettings.LoadedFiles.Count();
-
                 int step = 0;
+
                 //For each loaded path
                 foreach (string path in _globalSettings.LoadedFiles)
                 {
@@ -199,16 +208,16 @@ namespace FrameSurgeon.Services
                     }
 
                     //Don't check anything, just load the image and save it as new under the selected format
-                    MagickImage image = new MagickImage(path);
+                    using (var image = new MagickImage(path))
+                    {
 
-                    //Re-scale if applicable
-                    ResizeFrame(image, (uint)_globalSettings.FrameSizeWidth, (uint)_globalSettings.FrameSizeHeight);
+                        //Re-scale if applicable
+                        ResizeFrame(image, (uint)_globalSettings.FrameSizeWidth, (uint)_globalSettings.FrameSizeHeight);
 
-                    //The image is disposed of in the OutputImage function
-                    InputOutput.OutputImage(_globalSettings.SelectedExtension, _globalSettings.OutputPath, image: image, null, step);
-
-                    step++;
-
+                        //The image is disposed of in the OutputImage function
+                        InputOutput.OutputImage(_globalSettings.SelectedExtension, _globalSettings.OutputPath, image: image, null, step);
+                        step++;
+                    }
                     //Adding to second division
                     Dispatcher.UIThread.Post(() => { _context.CurrentProgress += 2.0 / maxProgress; });
                 }
@@ -225,24 +234,32 @@ namespace FrameSurgeon.Services
 
         private ProcessResult MakeAnimatedGif()
         {
-
-            // Create the new image
-            var result = ProcessAnimatedGif(false);
-
-            if (result.Result == Result.Failure)
+            try
             {
-                return new ProcessResult(Result.Failure, result.Message);
+                // Create the new image
+                var result = ProcessAnimatedGif(false);
+
+                if (result.Result == Result.Failure)
+                {
+                    return new ProcessResult(Result.Failure, result.Message);
+                }
+
+                using (var collection = result.Collection)
+                {
+                    // Write the animated GIF to file
+                    InputOutput.OutputImage(_globalSettings.SelectedExtension, _globalSettings.OutputPath, collection: collection);
+                }
+
+                //Adding to third
+                Dispatcher.UIThread.Post(() => { _context.CurrentProgress++; });
+
+                return new ProcessResult(Result.Success, "Animated GIF created!");
             }
-
-            var collection = result.Collection;
-
-            // Write the animated GIF to file
-            InputOutput.OutputImage(_globalSettings.SelectedExtension, _globalSettings.OutputPath, collection: collection);
-              
-            //Adding to third
-            Dispatcher.UIThread.Post(() => { _context.CurrentProgress++; });
-
-            return new ProcessResult(Result.Success, "Animated GIF created!");
+            catch (Exception e)
+            {
+                // Provide more context and preserve original exception details
+                throw new Exception("An error occurred while creating the animated GIF.", e);
+            }
         }
 
         private void ResizeFrame(MagickImage image, uint width, uint height)
@@ -295,6 +312,8 @@ namespace FrameSurgeon.Services
                         // Check if the file still exists
                         if (!System.IO.File.Exists(_globalSettings.LoadedFiles[step]))
                         {
+                            firstImage.Dispose();
+                            canvas.Dispose();
                             return new ProcessResult(Result.Failure, $"Image {Path.GetFileName(_globalSettings.LoadedFiles[step])} couldn't be found!");
                         }
 
@@ -318,6 +337,7 @@ namespace FrameSurgeon.Services
                     
                 }
             }
+            firstImage.Dispose();
             return new ProcessResult(Result.Success, null, canvas, null);
         }
 
@@ -337,6 +357,7 @@ namespace FrameSurgeon.Services
                 // Check if the fil still exists
                 if (!System.IO.File.Exists(path))
                 {
+                    collection.Dispose();
                     return new ProcessResult(Result.Failure, $"Image {Path.GetFileName(path)} couldn't be found!");
                 }
                 // Create a new image for each frame

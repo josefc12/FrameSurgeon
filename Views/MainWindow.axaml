@@ -35,9 +35,23 @@
 
 		<StyleInclude Source="/Styles/ButtonStyles.axaml" />
 		<StyleInclude Source="/Styles/InputStyles.axaml" />
+
+		<Style Selector="DataGridColumnHeader">
+			<Setter Property="Margin" Value="0"/>
+			<Setter Property="Padding" Value="0"/>
+			<Setter Property="FontSize" Value="9"/>
+			<Setter Property="Foreground" Value="{actipro:ThemeResource DefaultForegroundBrushSecondary}"/>
+		</Style>
+
+		<Style Selector="DataGridRow:pointerover">
+			<Setter Property="Background" Value="#7fc7bf"/>
+			<Setter Property="Foreground" Value="#000000"/>
+		</Style>
+		<Style Selector="DataGridRow /template/ DataGridCellsPresenter">
+			<Setter Property="Background" Value="{TemplateBinding Background}"/>
+		</Style>
 		
 	</Window.Styles>
-    
     <DockPanel>
         <!-- Top bar -->
 		<views:DockPanelTopComponent DockPanel.Dock="Top"/>
@@ -47,6 +61,7 @@
 		<views:DockPanelRightComponent DockPanel.Dock="Right"/>
         <!-- Left/Frames root panel -->
         <views:DockPanelLeftComponent DockPanel.Dock="Left"/>
+		
     </DockPanel>
     
 </Window>

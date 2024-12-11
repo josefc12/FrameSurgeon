@@ -4,6 +4,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using FrameSurgeon.ViewModels;
 using FrameSurgeon.Views;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -38,7 +39,10 @@ public partial class App : Application
     public void RegisterPreviewWindow(Window window)
     {
         _previewWindows.Add(window);
-        window.Closed += (s, e) => _previewWindows.Remove(window);
+    }
+    public void PurgePreviewWindow(Window window)
+    {
+        _previewWindows.Remove(window);
     }
 
 }

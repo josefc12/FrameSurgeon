@@ -11,17 +11,36 @@
 		ColumnDefinitions="*,*"
 		Background="{actipro:ThemeResource Container2BackgroundBrush}">
 
-		<Button
-			ToolTip.Tip="{Binding ToolTips.LoadButton}"
-			IsEnabled="{Binding !IsProcessing}"
-			Margin="4,4,2,2"
-			Width="42"
-			FontSize="9"
-			HorizontalAlignment="Left"
-			Command="{Binding LoadNewImages}"
-			Background="{actipro:ThemeResource Container5BackgroundBrush}">
-			Load
-		</Button>
+		<StackPanel Orientation="Horizontal">
+			<Button
+				Grid.Column="0"
+				ToolTip.Tip="{Binding ToolTips.LoadButton}"
+				IsEnabled="{Binding !IsProcessing}"
+				Margin="4,4,2,2"
+				Width="42"
+				FontSize="9"
+				HorizontalAlignment="Left"
+				Command="{Binding LoadNewImages}"
+				CommandParameter="{Binding isAdding}"
+				Background="{actipro:ThemeResource Container5BackgroundBrush}">
+				Load
+			</Button>
+			<Button
+				Grid.Column="0"
+				ToolTip.Tip="{Binding ToolTips.AppendButton}"
+				IsEnabled="{Binding !IsProcessing}"
+				IsVisible="{Binding !FrameNotLoaded}"
+				Margin="4,4,2,2"
+				Width="62"
+				FontSize="9"
+				HorizontalAlignment="Left"
+				Command="{Binding LoadNewImages}"
+				CommandParameter="{Binding !isAdding}"
+				Background="{actipro:ThemeResource Container5BackgroundBrush}">
+				+ Append
+			</Button>
+		</StackPanel>
+
 
 		<Button
 			Grid.Column="1"

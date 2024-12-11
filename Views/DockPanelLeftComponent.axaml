@@ -6,20 +6,24 @@
 			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			x:Class="FrameSurgeon.Views.DockPanelLeftComponent"
 			xmlns:vm="using:FrameSurgeon.ViewModels"
+			xmlns:datagrid="using:ActiproSoftware.UI.Avalonia.Themes.DataGrid"
 			x:DataType="vm:MainWindowViewModel">
-	
+
+
+
 	<Border
 		BorderBrush="{actipro:ThemeResource Container1BorderBrush}"
 		BorderThickness="1"
 		Background="{actipro:ThemeResource Container1BackgroundBrush}"
 		CornerRadius="6"
 		Margin="4" >
-		
-		<ScrollViewer>
+
+		<Grid RowDefinitions="Auto,*">
 			<StackPanel
+				Grid.Row="0"
 				Spacing="4"
 				Margin="4">
-				
+				<!--
 				<TextBlock
 					Margin="8 4 4 6 "
 					FontSize="9"
@@ -27,7 +31,7 @@
 					Foreground="{actipro:ThemeResource DefaultForegroundBrushTertiary}">
 					Frames
 				</TextBlock>
-				
+				-->
 				<TextBlock
 					Margin="8 4 4 6 "
 					FontSize="12"
@@ -36,33 +40,37 @@
 					Foreground="{actipro:ThemeResource DefaultForegroundBrushTertiary}">
 					Please start by loading your frames.
 				</TextBlock>
-				
-				<ItemsControl ItemsSource="{Binding LoadedFilesNames}"  FontSize="12">
-					<ItemsControl.ItemTemplate>
-						<DataTemplate>
-							<Grid ColumnDefinitions="*,Auto">
-								
-								<!--The name of the image/path-->
-								<TextBlock Margin="8 0 0 0 " Text="{Binding}" Grid.Column="0" TextWrapping="NoWrap" VerticalAlignment="Center" />
-								
-								<!--Remove image-->
+				</StackPanel>
+			<DataGrid
+				FontSize="12"
+				Grid.Row="1"
+				IsReadOnly="True"
+				SelectionMode="Single"
+				CanUserResizeColumns="False"
+				CanUserSortColumns="False"
+				HeadersVisibility="Column"
+				SelectionChanged="DataGrid_OnSelectionChanged"
+				ItemsSource="{Binding LoadedFilesNames}"
+				Foreground="{actipro:ThemeResource DefaultForegroundBrushSecondary}">
+
+				<DataGrid.Columns >
+					<DataGridTextColumn Width="*" Header="Name"  Binding="{Binding Name}"/>
+					<DataGridTemplateColumn Header="">
+						<DataGridTemplateColumn.CellTemplate>
+							<DataTemplate>
 								<Button
-									Grid.Column="1"
-									FontSize="9"
-									Margin="2"
-									HorizontalAlignment="Right"
-									Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).RemoveFrame}"
-									CommandParameter="{Binding}"
-									Background="{actipro:ThemeResource Container5BackgroundBrush}">
-									R
+									Classes="Reset"
+									Margin="16 2 16 2"
+									Command="{Binding $parent.((vm:MainWindowViewModel)DataContext).RemoveFrame}"
+									CommandParameter="{Binding Name}"
+									HorizontalAlignment="Right">
+									<Image Classes="uniform-on" Source="{SvgImage /Assets/Svg/x-circle.svg}" />
 								</Button>
-								
-							</Grid>
-						</DataTemplate>
-					</ItemsControl.ItemTemplate>
-				</ItemsControl>
-				
-			</StackPanel>
-		</ScrollViewer>
+							</DataTemplate>
+						</DataGridTemplateColumn.CellTemplate>
+					</DataGridTemplateColumn>
+				</DataGrid.Columns>
+			</DataGrid>
+		</Grid>
 	</Border>
 </UserControl>

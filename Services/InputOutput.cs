@@ -73,11 +73,9 @@ namespace FrameSurgeon.Classes
 
                 image.Write(finalPath);
 
-                image.Dispose();
             }
             else if (collection != null)
             {
-                Debug.WriteLine(collection.Count());
                 collection.Write(finalPath);
             }
             

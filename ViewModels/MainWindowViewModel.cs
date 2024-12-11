@@ -24,12 +24,14 @@ using System.IO;
 using Microsoft.VisualBasic;
 using Avalonia;
 using Avalonia.Media;
+using System.Linq.Expressions;
+using DynamicData;
 
 namespace FrameSurgeon.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
 {
-    public ReactiveCommand<Unit, Unit> LoadNewImages { get; }
+    public ReactiveCommand<bool, Unit> LoadNewImages { get; }
     public ReactiveCommand<string, Unit> RemoveFrame { get; }
     public ReactiveCommand<Unit, Unit> ResetFlipbookResolution { get; }
     public ReactiveCommand<Unit, Unit> ResetFrameSize { get; }
@@ -43,7 +45,7 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
 
     private readonly App _app;
     private ObservableCollection<string> _loadedFiles = new ObservableCollection<string>();
-    private ObservableCollection<string> _loadedFilesNames = new ObservableCollection<string>();
+    private ObservableCollection<FrameRow> _loadedFilesNames = new ObservableCollection<FrameRow>();
     private ExportMode _selectedExportMode;
     private List<string> _convertedExtensions = ValueConverter.GetConvertedExtensions(ExportMode.Flipbook);
     private bool _isFlipBookModeSelected = true;
@@ -61,6 +63,8 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     private int? _maxProgress = 100;
     private double? _currentProgress = 0;
     private string _outputPath;
+
+    public bool isAdding { get; } = false;
 
     public ToolTipInformation ToolTips { get; } = new ToolTipInformation();
 
@@ -213,7 +217,7 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
             }
         }
     }
-    public ObservableCollection<string> LoadedFilesNames
+    public ObservableCollection<FrameRow> LoadedFilesNames
     {
         get => _loadedFilesNames;
         set
@@ -341,7 +345,7 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
         _app = app;
         SelectedExtension = _convertedExtensions[0];
         
-        LoadNewImages = ReactiveCommand.Create(RunLoadNewImages);
+        LoadNewImages = ReactiveCommand.Create<bool>(RunLoadNewImages);
         RemoveFrame = ReactiveCommand.Create<string>(RunRemoveFrame);
         ResetFlipbookResolution = ReactiveCommand.Create(RunResetFlipbookResolution);
         ResetFrameSize = ReactiveCommand.Create(RunResetFrameSize);
@@ -367,15 +371,19 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     }
 
     // COMMAND FUNCTIONS
-    private async void RunLoadNewImages()
+    private async void RunLoadNewImages(bool isAdding)
     {
+        Debug.WriteLine(isAdding);
         // Load paths
         try
         {
             var filePaths = await InputOutput.DoOpenFilePickerAsync();
             if (!filePaths.Any()) return;
-            LoadedFiles.Clear();
-
+            if (!isAdding)
+            {
+                LoadedFiles.Clear();
+                Debug.WriteLine("Cleared");
+            }
             foreach (var filePath in filePaths)
             {
                 LoadedFiles.Add(filePath);
@@ -383,7 +391,7 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
 
             foreach (var filePath in filePaths)
             {
-                LoadedFilesNames.Add(Path.GetFileName(filePath));
+                LoadedFilesNames.Add(new FrameRow(Path.GetFileName(filePath), filePath));
             }
 
             if (filePaths.Count() > 0)
@@ -404,8 +412,16 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     }
     private void RunRemoveFrame(string itemPath)
     {
-        LoadedFiles.Remove(itemPath);
-        LoadedFilesNames.Remove(Path.GetFileName(itemPath));
+
+
+
+
+        var itemToRemove = LoadedFilesNames.FirstOrDefault(f => f.Name == Path.GetFileName(itemPath));
+        if (itemToRemove != null)
+        {
+            LoadedFiles.Remove(itemToRemove.AbsolutePath);
+            LoadedFilesNames.Remove(itemToRemove);
+        }
 
         if (LoadedFiles.Count == 0)
         {
@@ -449,60 +465,72 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
 
         ProcessResult? result = null;
 
-        await Task.Run(() =>
+        try
         {
-
-            Dispatcher.UIThread.Post(() => IsProcessing = true);
-
-            GlobalSettings globalSettings = new GlobalSettings()
+            await Task.Run(() =>
             {
-                ExportMode = ValueConverter.GetExportModeAsEnumValue(SelectedExportMode),
-                LoadedFiles = LoadedFiles.ToList(),
-                OutputPath = OutputPath,
-                SelectedExtension = SelectedExtension,
-                TransparencyEnabled = TransparencyEnabled,
-                FrameSizeHeight = FrameSizeHeight ?? 0,
-                FrameSizeWidth = FrameSizeWidth ?? 0,
-            };
 
-            FlipbookSettings flipbookSettings = new FlipbookSettings()
+                Dispatcher.UIThread.Post(() => IsProcessing = true);
+
+                GlobalSettings globalSettings = new GlobalSettings()
+                {
+                    ExportMode = ValueConverter.GetExportModeAsEnumValue(SelectedExportMode),
+                    LoadedFiles = LoadedFiles.ToList(),
+                    OutputPath = OutputPath,
+                    SelectedExtension = SelectedExtension,
+                    TransparencyEnabled = TransparencyEnabled,
+                    FrameSizeHeight = FrameSizeHeight ?? 0,
+                    FrameSizeWidth = FrameSizeWidth ?? 0,
+                };
+
+                FlipbookSettings flipbookSettings = new FlipbookSettings()
+                {
+                    hResolution = FlipbookResolutionHorizontal ?? 0,
+                    vResolution = FlipbookResolutionVertical ?? 0,
+                };
+
+                GifSettings gifSettings = new GifSettings()
+                {
+                    Fps = GifFps ?? 30,
+                    Looping = GifLooping
+                };
+
+                Processor processor = new Processor(globalSettings, flipbookSettings, gifSettings, this);
+                result = processor.Process();
+
+                Dispatcher.UIThread.Post(() => IsProcessing = false);
+
+            });
+
+            Dispatcher.UIThread.Post(() => { CurrentProgress = 0; });
+
+            if (result != null && result.Result == Result.Failure)
             {
-                hResolution = FlipbookResolutionHorizontal ?? 0,
-                vResolution = FlipbookResolutionVertical ?? 0,
-            };
-
-            GifSettings gifSettings = new GifSettings()
+                // Show error message
+                var warning = new DialogViewModel(DialogType.Warning, result.Message);
+                await ShowDialog.Handle(warning);
+            }
+            else if (result != null)
             {
-                Fps = GifFps ?? 30,
-                Looping = GifLooping
-            };
+                // Show success message
+                var success = new DialogViewModel(DialogType.Success, result.Message);
+                await ShowDialog.Handle(success);
+            }
+            else
+            {
+                var failure = new DialogViewModel(DialogType.Error, "Fatal error");
+                await ShowDialog.Handle(failure);
 
-            Processor processor = new Processor(globalSettings, flipbookSettings, gifSettings, this);
-            result = processor.Process();
-
-            Dispatcher.UIThread.Post(() => IsProcessing = false);
-            
-        });
-
-        Dispatcher.UIThread.Post(() => { CurrentProgress = 0; });
-
-        if (result != null && result.Result == Result.Failure)
-        {
-            // Show error message
-            var warning = new DialogViewModel(DialogType.Warning, result.Message);
-            await ShowDialog.Handle(warning);
+            }
         }
-        else if (result != null)
+        catch (Exception ex)
         {
-            // Show success message
-            var success = new DialogViewModel(DialogType.Success, result.Message);
-            await ShowDialog.Handle(success);
-        }
-        else
-        {
-            var failure = new DialogViewModel(DialogType.Error, "Fatal error");
-            await ShowDialog.Handle(failure);
 
+        }
+        finally
+        {
+            result?.Image?.Dispose();
+            result?.Collection?.Dispose();
         }
 
     }
@@ -546,35 +574,30 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
         else if (previewResult != null)
         {
             // Display the resulted preview
-            using (var memoryStream = new MemoryStream())
+
+            if (previewResult.Image != null)
             {
-
-                if (previewResult.Image != null)
+                await DisplayImage(previewResult.Image);
+            }
+            else if (previewResult.Collection != null)
+            {
+                try
                 {
-
-                    await DisplayImage(previewResult.Image);
-                    
-                }
-                else if (previewResult.Collection != null)
-                {
-                    try
-                    {
-                        await DisplayAnimatedGif(previewResult.Collection);
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"Exception: {ex.Message}\n{ex.StackTrace}");
-                        var failure = new DialogViewModel(DialogType.Error, ex.Message);
-                        await ShowDialog.Handle(failure);
-                    }
+                    await DisplayAnimatedGif(previewResult.Collection);
 
                 }
-                else
+                catch (Exception ex)
                 {
-                    var failure = new DialogViewModel(DialogType.Error, "Fatal error");
+                    Debug.WriteLine($"Exception: {ex.Message}\n{ex.StackTrace}");
+                    var failure = new DialogViewModel(DialogType.Error, ex.Message);
                     await ShowDialog.Handle(failure);
                 }
-                
+
+            }
+            else
+            {
+                var failure = new DialogViewModel(DialogType.Error, "Fatal error");
+                await ShowDialog.Handle(failure);
             }
 
         }
@@ -652,6 +675,17 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
             }
         };
 
+        window.Closed += (s, e) =>
+        {
+            collection.Dispose();
+            foreach (var frame in frames)
+            {
+                frame.Dispose();
+            }
+
+            _app.PurgePreviewWindow(window);
+        };
+
         _app.RegisterPreviewWindow(window);
 
         window.Show();
@@ -678,34 +712,39 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     }
     private Task DisplayImage(MagickImage image)
     {
-        using (var memoryStream = new MemoryStream())
+        var memoryStream = new MemoryStream();
+        image.Write(memoryStream, MagickFormat.Png);
+        memoryStream.Seek(0, SeekOrigin.Begin);
+
+        var avaloniaBitmap = new Bitmap(memoryStream);
+
+        var window = new Window
         {
-            image.Write(memoryStream, MagickFormat.Png);
-            memoryStream.Seek(0, SeekOrigin.Begin);
-
-            var avaloniaBitmap = new Bitmap(memoryStream);
-
-            var window = new Window
+            Title = "Image Preview",
+            Width = avaloniaBitmap.PixelSize.Width +200,
+            Height = avaloniaBitmap.PixelSize.Height +40,
+            Content = new Border
             {
-                Title = "Image Preview",
-                Width = avaloniaBitmap.PixelSize.Width +200,
-                Height = avaloniaBitmap.PixelSize.Height +40,
-                Content = new Border
+                Padding = new Thickness(20),
+                Background = Brushes.White,
+                Child = new Image
                 {
-                    Padding = new Thickness(20),
-                    Background = Brushes.White,
-                    Child = new Image
-                    {
-                        Source = avaloniaBitmap,
-                        Stretch = Stretch.Uniform
-                    }
+                    Source = avaloniaBitmap,
+                    Stretch = Stretch.Uniform
                 }
-            };
+            }
+        };
 
-            _app.RegisterPreviewWindow(window);
+        window.Closed += (s, e) =>
+        {
+            avaloniaBitmap.Dispose();
+            memoryStream.Dispose();
+            _app.PurgePreviewWindow(window);
+        };
 
-            window.Show();
-        }
+        _app.RegisterPreviewWindow(window);
+
+        window.Show();
 
         return Task.CompletedTask;
     }

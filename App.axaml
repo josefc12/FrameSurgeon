@@ -3,6 +3,7 @@
              x:Class="FrameSurgeon.App"
              xmlns:local="using:FrameSurgeon"
              xmlns:actipro="http://schemas.actiprosoftware.com/avaloniaui"
+			 xmlns:datagrid="using:ActiproSoftware.UI.Avalonia.Themes.DataGrid"
              RequestedThemeVariant="Dark">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
@@ -12,5 +13,6 @@
   
     <Application.Styles>
         <actipro:ModernTheme />
+		<StyleInclude Source="avares://ActiproSoftware.Avalonia.Themes.Native.DataGrid/Themes/Common.axaml"/>
     </Application.Styles>
 </Application>
