@@ -23,21 +23,13 @@
 				Grid.Row="0"
 				Spacing="4"
 				Margin="4">
-				<!--
+
 				<TextBlock
-					Margin="8 4 4 6 "
-					FontSize="9"
-					FontWeight="Light"
-					Foreground="{actipro:ThemeResource DefaultForegroundBrushTertiary}">
-					Frames
-				</TextBlock>
-				-->
-				<TextBlock
-					Margin="8 4 4 6 "
+					Margin="4 4 4 6 "
 					FontSize="12"
 					FontWeight="Light"
 					IsVisible="{Binding FrameNotLoaded}"
-					Foreground="{actipro:ThemeResource DefaultForegroundBrushTertiary}">
+					Foreground="#7fc7bf">
 					Please start by loading your frames.
 				</TextBlock>
 				</StackPanel>
@@ -48,7 +40,7 @@
 				SelectionMode="Single"
 				CanUserResizeColumns="False"
 				CanUserSortColumns="False"
-				HeadersVisibility="Column"
+				HeadersVisibility="None"
 				SelectionChanged="DataGrid_OnSelectionChanged"
 				ItemsSource="{Binding LoadedFilesNames}"
 				Foreground="{actipro:ThemeResource DefaultForegroundBrushSecondary}">

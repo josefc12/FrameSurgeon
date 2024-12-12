@@ -3,25 +3,27 @@ using FrameSurgeon.Classes;
 using FrameSurgeon.Enums;
 using FrameSurgeon.Models;
 using FrameSurgeon.ViewModels;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 
 namespace FrameSurgeon.Services
 {
     public static class Validator
     {
-        public static ProcessResult IsMakeAllowed(GlobalSettings globalSettings, FlipbookSettings flipbookSettings)
+        public static ProcessResult IsMakeAllowed(MainWindowViewModel context)
         {
             // Run a specific set of checks and functions for each of the Steps
             foreach (var step in Enum.GetValues<Step>())
             {
                 ProcessResult result = step switch
                 {
-                    Step.ImagesLoaded => CheckImagesLoaded(globalSettings.ExportMode, globalSettings.LoadedFiles),
-                    Step.ParametersCorrect => CheckParameters(globalSettings, flipbookSettings),
-                    Step.OutputPathSet => globalSettings.OutputPath == "" || globalSettings.OutputPath == null ? new ProcessResult(Result.Failure, "Please set the output path.") : new ProcessResult(Result.Success),
+                    Step.ImagesLoaded => CheckImagesLoaded(ValueConverter.GetExportModeAsEnumValue(context.SelectedExportMode), context.LoadedFiles.ToList()),
+                    Step.ParametersCorrect => CheckParameters(context),
+                    Step.OutputPathSet => context.OutputPath == "" || context.OutputPath == null ? new ProcessResult(Result.Failure, "Please set the output path.") : new ProcessResult(Result.Success),
                 };
 
                 if (result.Result == Result.Failure)
@@ -51,18 +53,18 @@ namespace FrameSurgeon.Services
 
 
 
-        private static ProcessResult CheckParameters(GlobalSettings globalSettings, FlipbookSettings flipbookSettings)
+        private static ProcessResult CheckParameters(MainWindowViewModel context)
         {
 
-            if (GlobalSettingsValid(globalSettings) == false)
+            if (GlobalSettingsValid(context) == false)
             {
                 return new ProcessResult(Result.Failure, "Global settings are invalid.");
             }
 
-            ProcessResult parametersValid = globalSettings.ExportMode switch
+            ProcessResult parametersValid = ValueConverter.GetExportModeAsEnumValue(context.SelectedExportMode) switch
             {
-                ExportMode.Flipbook => CheckFlipbookParameters(flipbookSettings),
-                ExportMode.DismantleFlipbook => CheckDismantleFlipbookParameters(flipbookSettings),
+                ExportMode.Flipbook => CheckFlipbookParameters(context),
+                ExportMode.DismantleFlipbook => CheckDismantleFlipbookParameters(context),
                 ExportMode.Convert => CheckConversionParameters(),
                 ExportMode.AnimatedGif => CheckAnimatedGifParameters() //TODO create pass settings object
             };
@@ -70,10 +72,10 @@ namespace FrameSurgeon.Services
             return parametersValid;
         }
 
-        private static ProcessResult CheckFlipbookParameters(FlipbookSettings flipbookSettings)
+        private static ProcessResult CheckFlipbookParameters(MainWindowViewModel context)
         {
 
-            if (flipbookSettings.hResolution == 0 || flipbookSettings.vResolution == 0)
+            if (context.FlipbookResolutionHorizontal == 0 || context.FlipbookResolutionVertical == 0)
             {
                 return new ProcessResult(Result.Failure, "Please make sure flipbook dimensions aren't set to 0.");
             }
@@ -82,12 +84,12 @@ namespace FrameSurgeon.Services
 
         }
 
-        private static ProcessResult CheckDismantleFlipbookParameters(FlipbookSettings flipbookSettings)
+        private static ProcessResult CheckDismantleFlipbookParameters(MainWindowViewModel context)
         {
 
-            if (flipbookSettings.hResolution >= 2 || flipbookSettings.vResolution >= 2)
+            if (context.FlipbookResolutionHorizontal >= 2 || context.FlipbookResolutionVertical >= 2)
             {
-                if (flipbookSettings.hResolution == 0 || flipbookSettings.vResolution == 0)
+                if (context.FlipbookResolutionHorizontal == 0 || context.FlipbookResolutionVertical == 0)
                 {
                     return new ProcessResult(Result.Failure, "Please make sure flipbook dimensions aren't set to 0.");
                 }
@@ -111,7 +113,7 @@ namespace FrameSurgeon.Services
 
         }
 
-        private static bool GlobalSettingsValid(GlobalSettings globalSettings)
+        private static bool GlobalSettingsValid(MainWindowViewModel context)
         {
             //TODO
             return true;

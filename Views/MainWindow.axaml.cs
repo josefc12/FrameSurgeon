@@ -19,6 +19,9 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         this.WhenActivated(
             action =>action(ViewModel!.ShowDialog.RegisterHandler(DoShowDialogAsync)));
 
+        this.WhenActivated(
+            action => action(ViewModel!.ShowSettings.RegisterHandler(DoShowSettingsAsync)));
+
         this.Closing += MainWindow_Closing;
     }
 
@@ -29,6 +32,16 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         dialog.DataContext = interaction.Input;
 
         var result = await dialog.ShowDialog<MainWindowViewModel>(this);
+        interaction.SetOutput(result);
+    }
+
+    private async Task DoShowSettingsAsync(InteractionContext<MainWindowViewModel,
+                                        MainWindowViewModel> interaction)
+    {
+        var settings = new SettingsWindow();
+        settings.DataContext = interaction.Input;
+
+        var result = await settings.ShowDialog<MainWindowViewModel>(this);
         interaction.SetOutput(result);
     }
 

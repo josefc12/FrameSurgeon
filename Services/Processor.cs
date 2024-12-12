@@ -8,6 +8,9 @@ using System.Linq;
 using Avalonia.Threading;
 using System.IO;
 using System.Diagnostics;
+using System.Collections.Generic;
+using ImageMagick.Drawing;
+using Avalonia.Controls;
 
 namespace FrameSurgeon.Services
 {
@@ -16,16 +19,10 @@ namespace FrameSurgeon.Services
 
         /* Progress bar updating is fairly primitive. Good enough I guess. */
 
-        private GlobalSettings _globalSettings { get; set; }
-        private FlipbookSettings _flipbookSettings { get; set; }
-        private GifSettings _gifSettings { get; set; }
         private MainWindowViewModel _context { get; set; }
 
-        public  Processor(GlobalSettings globalSettings, FlipbookSettings flipbookSettings, GifSettings gifSettings, MainWindowViewModel context)
+        public Processor(MainWindowViewModel context)
         {
-            _globalSettings = globalSettings;
-            _flipbookSettings = flipbookSettings;
-            _gifSettings = gifSettings;
             _context = context;
         }
 
@@ -33,10 +30,10 @@ namespace FrameSurgeon.Services
         {
 
             // Set progress bar divisions
-            Dispatcher.UIThread.Post(() => { _context.MaxProgress = 3;});
+            Dispatcher.UIThread.Post(() => { _context.MaxProgress = 3; });
 
             // Validate parameters
-            ProcessResult validatorResult = Validator.IsMakeAllowed(_globalSettings, _flipbookSettings);
+            ProcessResult validatorResult = Validator.IsMakeAllowed(_context);
             // If validation failed, return
             if (validatorResult.Result == Result.Failure)
             {
@@ -44,10 +41,10 @@ namespace FrameSurgeon.Services
             }
 
             // First division complete
-            Dispatcher.UIThread.Post(() => { _context.CurrentProgress++;});
+            Dispatcher.UIThread.Post(() => { _context.CurrentProgress++; });
 
             // Run specific process bases on information in the global settings
-            ProcessResult result = _globalSettings.ExportMode switch
+            ProcessResult result = ValueConverter.GetExportModeAsEnumValue(_context.SelectedExportMode) switch
             {
                 ExportMode.Flipbook => MakeFlipbook(),
                 ExportMode.DismantleFlipbook => DismantleFlipbook(),
@@ -61,12 +58,12 @@ namespace FrameSurgeon.Services
         public ProcessResult Preview()
         {
 
-            if (_globalSettings.LoadedFiles.Count() <= 0)
+            if (_context.LoadedFiles.Count() <= 0)
             {
-               return new ProcessResult(Result.Failure, "No images loaded!");
+                return new ProcessResult(Result.Failure, "No images loaded!");
             }
 
-            var result = _globalSettings.ExportMode switch
+            var result = ValueConverter.GetExportModeAsEnumValue(_context.SelectedExportMode) switch
             {
                 ExportMode.Flipbook => ProcessFlipbook(true),
                 ExportMode.DismantleFlipbook => new ProcessResult(Result.Failure, "This mode can't be previewed."),
@@ -97,14 +94,14 @@ namespace FrameSurgeon.Services
                 // Save/Export/Write the new image
                 try
                 {
-                    InputOutput.OutputImage(_globalSettings.SelectedExtension, _globalSettings.OutputPath, canvas);
+                    InputOutput.OutputImage(_context.SelectedExtension, _context.OutputPath, canvas);
                 }
                 finally
                 {
                     canvas?.Dispose();
                     result.Image?.Dispose();
                 }
-                
+
                 //Adding to third 
                 Dispatcher.UIThread.Post(() => { _context.CurrentProgress++; });
 
@@ -113,7 +110,7 @@ namespace FrameSurgeon.Services
             {
                 throw new Exception(e.Message);
             }
-            
+
 
             return new ProcessResult(Result.Success, "Flipbook created!");
         }
@@ -124,28 +121,28 @@ namespace FrameSurgeon.Services
             // Check if path exists and is a valid image file
             try
             {
-                
+
                 // Check if the file still exists
-                if (!System.IO.File.Exists(_globalSettings.LoadedFiles[0]))
+                if (!System.IO.File.Exists(_context.LoadedFiles[0]))
                 {
-                    return new ProcessResult(Result.Failure, $"Image {Path.GetFileName(_globalSettings.LoadedFiles[0])} couldn't be found!");
+                    return new ProcessResult(Result.Failure, $"Image {Path.GetFileName(_context.LoadedFiles[0])} couldn't be found!");
                 }
 
                 //First image in the loaded images
-                using (var image = new MagickImage(_globalSettings.LoadedFiles[0]))
+                using (var image = new MagickImage(_context.LoadedFiles[0]))
                 {
 
-                    int cropSizeHorizontal = (int)image.Width / _flipbookSettings.hResolution;
-                    int cropSizeVertical = (int)image.Height / _flipbookSettings.vResolution;
+                    int cropSizeHorizontal = (int)image.Width / _context.FlipbookResolutionHorizontal ?? 0;
+                    int cropSizeVertical = (int)image.Height / _context.FlipbookResolutionVertical ?? 0;
 
                     //Max amount from 2nd progress bar division
-                    var maxProgress = _flipbookSettings.vResolution * _flipbookSettings.hResolution;
+                    var maxProgress = _context.FlipbookResolutionVertical * _context.FlipbookResolutionHorizontal;
 
                     int step = 0;
                     // Loop through rows and columns
-                    for (int row = 0; row < _flipbookSettings.vResolution; row++)
+                    for (int row = 0; row < _context.FlipbookResolutionVertical; row++)
                     {
-                        for (int col = 0; col < _flipbookSettings.hResolution; col++)
+                        for (int col = 0; col < _context.FlipbookResolutionHorizontal; col++)
                         {
                             int x = col * cropSizeHorizontal;
                             int y = row * cropSizeVertical;
@@ -157,16 +154,23 @@ namespace FrameSurgeon.Services
                                 croppedImage.Crop(cropArea);
 
                                 //Re-scale if applicable
-                                ResizeFrame(croppedImage, (uint)_globalSettings.FrameSizeWidth, (uint)_globalSettings.FrameSizeHeight);
+                                ResizeFrame(croppedImage, (uint)(_context.FrameSizeWidth ?? 0), (uint)(_context.FrameSizeHeight ?? 0));
 
                                 // Create a new image/canvas to paste the pixels onto
-                                MagickColor color = _globalSettings.TransparencyEnabled == true ? MagickColors.Transparent : MagickColors.Black;
+                                MagickColor color = _context.TransparencyEnabled == true ? MagickColors.Transparent : MagickColors.Black;
 
                                 //Create canvas
                                 using (var canvas = new MagickImage(color, croppedImage.Width, croppedImage.Height))
                                 {
                                     canvas.Composite(croppedImage, 0, 0, CompositeOperator.Over);
-                                    InputOutput.OutputImage(_globalSettings.SelectedExtension, _globalSettings.OutputPath, image: canvas, null, step);
+
+                                    //Annotate if applicable
+                                    if (_context.AnnotateFramesEnabled)
+                                    {
+                                        ApplyAnnotation(canvas, step.ToString());
+                                    }
+
+                                    InputOutput.OutputImage(_context.SelectedExtension, _context.OutputPath, image: canvas, null, step);
                                 }
 
                             }
@@ -184,7 +188,7 @@ namespace FrameSurgeon.Services
             {
                 throw new Exception(e.Message);
             }
-            
+
             return new ProcessResult(Result.Success, "Dismantling finished!");
         }
 
@@ -194,11 +198,17 @@ namespace FrameSurgeon.Services
             {
 
                 //Max amount from 2nd progress bar division
-                var maxProgress = _globalSettings.LoadedFiles.Count();
+                var maxProgress = _context.LoadedFiles.Count();
                 int step = 0;
 
+                List<string> finalFrames = _context.LoadedFiles.ToList();
+                if (_context.SkipFramesEnabled)
+                {
+                    finalFrames = ApplyFrameReduction(_context.LoadedFiles.ToList());
+                }
+
                 //For each loaded path
-                foreach (string path in _globalSettings.LoadedFiles)
+                foreach (string path in finalFrames)
                 {
 
                     // Check if the fil still exists
@@ -212,10 +222,16 @@ namespace FrameSurgeon.Services
                     {
 
                         //Re-scale if applicable
-                        ResizeFrame(image, (uint)_globalSettings.FrameSizeWidth, (uint)_globalSettings.FrameSizeHeight);
+                        ResizeFrame(image, (uint)(_context.FrameSizeWidth ?? 0), (uint)(_context.FrameSizeHeight ?? 0));
+
+                        //Annotate if applicable
+                        if (_context.AnnotateFramesEnabled)
+                        {
+                            ApplyAnnotation(image, step.ToString());
+                        }
 
                         //The image is disposed of in the OutputImage function
-                        InputOutput.OutputImage(_globalSettings.SelectedExtension, _globalSettings.OutputPath, image: image, null, step);
+                        InputOutput.OutputImage(_context.SelectedExtension, _context.OutputPath, image: image, null, step);
                         step++;
                     }
                     //Adding to second division
@@ -247,7 +263,7 @@ namespace FrameSurgeon.Services
                 using (var collection = result.Collection)
                 {
                     // Write the animated GIF to file
-                    InputOutput.OutputImage(_globalSettings.SelectedExtension, _globalSettings.OutputPath, collection: collection);
+                    InputOutput.OutputImage(_context.SelectedExtension, _context.OutputPath, collection: collection);
                 }
 
                 //Adding to third
@@ -273,55 +289,67 @@ namespace FrameSurgeon.Services
         private ProcessResult ProcessFlipbook(bool isPreview)
         {
 
-            if (!System.IO.File.Exists(_globalSettings.LoadedFiles[0]))
+            if (!System.IO.File.Exists(_context.LoadedFiles[0]))
             {
-                return new ProcessResult(Result.Failure, $"Image {Path.GetFileName(_globalSettings.LoadedFiles[0])} couldn't be found!");
+                return new ProcessResult(Result.Failure, $"Image {Path.GetFileName(_context.LoadedFiles[0])} couldn't be found!");
+            }
+
+            List<string> finalFrames = _context.LoadedFiles.ToList();
+            if (_context.SkipFramesEnabled)
+            {
+                finalFrames = ApplyFrameReduction(_context.LoadedFiles.ToList());
             }
 
             //New image
-            MagickImage firstImage = new MagickImage(_globalSettings.LoadedFiles[0]);
+            MagickImage firstImage = new MagickImage(_context.LoadedFiles[0]);
 
             //Re-scale if applicable
-            ResizeFrame(firstImage, (uint)_globalSettings.FrameSizeWidth, (uint)_globalSettings.FrameSizeHeight);
+            ResizeFrame(firstImage, (uint)(_context.FrameSizeWidth ?? 0), (uint)(_context.FrameSizeHeight ?? 0));
 
             //Image size
-            uint newWidth = (uint)(_flipbookSettings.hResolution * firstImage.Width);
-            uint newHeight = (uint)(_flipbookSettings.vResolution * firstImage.Height);
+            uint newWidth = (uint)((_context.FlipbookResolutionHorizontal ?? 0) * firstImage.Width);
+            uint newHeight = (uint)((_context.FlipbookResolutionVertical ?? 0) * firstImage.Height);
 
             //Apply transparency, if enabled by the user
-            MagickColor color = _globalSettings.TransparencyEnabled == true ? MagickColors.Transparent : MagickColors.Black;
+            MagickColor color = _context.TransparencyEnabled == true ? MagickColors.Transparent : MagickColors.Black;
 
             //Create canvas
             MagickImage canvas = new MagickImage(color, newWidth, newHeight);
 
             //Max amount from 2nd progress bar division
-            var maxProgress = _flipbookSettings.vResolution * _flipbookSettings.hResolution;
+            var maxProgress = _context.FlipbookResolutionVertical * _context.FlipbookResolutionHorizontal;
 
             int step = 0;
             // Loop through rows and columns
-            for (int row = 0; row < _flipbookSettings.vResolution; row++)
+            for (int row = 0; row < _context.FlipbookResolutionVertical; row++)
             {
-                for (int col = 0; col < _flipbookSettings.hResolution; col++)
+                for (int col = 0; col < _context.FlipbookResolutionHorizontal; col++)
                 {
+
                     int x = col * (int)firstImage.Width;
                     int y = row * (int)firstImage.Height;
 
-                    if (step <= _globalSettings.LoadedFiles.Count - 1)
+                    if (step <= finalFrames.Count - 1)
                     {
 
                         // Check if the file still exists
-                        if (!System.IO.File.Exists(_globalSettings.LoadedFiles[step]))
+                        if (!System.IO.File.Exists(finalFrames[step]))
                         {
                             firstImage.Dispose();
                             canvas.Dispose();
-                            return new ProcessResult(Result.Failure, $"Image {Path.GetFileName(_globalSettings.LoadedFiles[step])} couldn't be found!");
+                            return new ProcessResult(Result.Failure, $"Image {Path.GetFileName(finalFrames[step])} couldn't be found!");
                         }
 
                         // Area of the pixels to be extracted
-                        MagickImage image = new MagickImage(_globalSettings.LoadedFiles[step]);
+                        MagickImage image = new MagickImage(finalFrames[step]);
 
                         //Re-scale if applicable
-                        ResizeFrame(image, (uint)_globalSettings.FrameSizeWidth, (uint)_globalSettings.FrameSizeHeight);
+                        ResizeFrame(image, (uint)(_context.FrameSizeWidth ?? 0), (uint)(_context.FrameSizeHeight ?? 0));
+
+                        if (_context.AnnotateFramesEnabled)
+                        {
+                            ApplyAnnotation(image, step.ToString());
+                        }
 
                         canvas.Composite(image, x, y, CompositeOperator.Over);
                         image.Dispose();
@@ -334,7 +362,7 @@ namespace FrameSurgeon.Services
                         //Adding to second division
                         Dispatcher.UIThread.Post(() => { _context.CurrentProgress += 1.0 / maxProgress; });
                     }
-                    
+
                 }
             }
             firstImage.Dispose();
@@ -343,16 +371,22 @@ namespace FrameSurgeon.Services
 
         private ProcessResult ProcessAnimatedGif(bool isPreview)
         {
-            int maxProgress=0;
+            int maxProgress = 0;
             if (!isPreview)
             {
                 //Max amount from 2nd progress bar division
-                maxProgress = _globalSettings.LoadedFiles.Count();
+                maxProgress = _context.LoadedFiles.Count();
             }
             var collection = new MagickImageCollection();
 
+            List<string> finalFrames = _context.LoadedFiles.ToList();
+            if (_context.SkipFramesEnabled)
+            {
+                finalFrames = ApplyFrameReduction(_context.LoadedFiles.ToList());
+            }
+
             // Add frames to the collection
-            foreach (string path in _globalSettings.LoadedFiles)
+            foreach (string path in finalFrames)
             {
                 // Check if the fil still exists
                 if (!System.IO.File.Exists(path))
@@ -362,10 +396,15 @@ namespace FrameSurgeon.Services
                 }
                 // Create a new image for each frame
                 MagickImage image = new MagickImage(path);
-                ResizeFrame(image, (uint)_globalSettings.FrameSizeWidth, (uint)_globalSettings.FrameSizeHeight);
+                ResizeFrame(image, (uint)(_context.FrameSizeWidth ?? 0), (uint)(_context.FrameSizeHeight ?? 0));
+
+                if (_context.AnnotateFramesEnabled)
+                {
+                    ApplyAnnotation(image, finalFrames.IndexOf(path).ToString());
+                }
 
                 // Set frame delay (in 1/100ths of a second)
-                image.AnimationDelay = 100 / (uint)_gifSettings.Fps;
+                image.AnimationDelay = 100 / (uint)(_context.GifFps ?? 30);
 
                 // Add the frame to the collection
                 collection.Add(image);
@@ -379,7 +418,7 @@ namespace FrameSurgeon.Services
             }
 
             // Set the loop count (0 for infinite looping)
-            if (_gifSettings.Looping)
+            if (_context.GifLooping)
             {
                 collection[0].AnimationIterations = 0;
             }
@@ -392,9 +431,41 @@ namespace FrameSurgeon.Services
             //collection.Optimize();
 
             return new ProcessResult(Result.Success, null, null, collection);
-            
+
 
         }
+
+        private List<string> ApplyFrameReduction(List<string> loadedFrames)
+        {
+            List<string> reducedFrames = new List<string>();
+            foreach (var b in loadedFrames)
+            {
+                if (loadedFrames.IndexOf(b) % 2 == 0)
+                {
+                    reducedFrames.Add(b);
+                }
+            }
+
+            return reducedFrames;
+
+        }
+
+        private void ApplyAnnotation(MagickImage frame, string annotation)
+        {
+            // Create a drawables object for drawing text
+            var drawables = new Drawables()
+                .Font("Arial",FontStyleType.Normal,FontWeight.Bold,FontStretch.Normal)    
+                .FontPointSize(24)           
+                .FillColor(MagickColors.White)
+                .StrokeColor(MagickColors.Black)
+                .StrokeWidth(0.3)
+                .TextAlignment(TextAlignment.Center)
+                .Text(frame.Width /2 , frame.Height -8 , annotation); 
+
+            // Apply the drawables to the image
+            drawables.Draw(frame);
+        }
+
 
     }
 }

@@ -1,0 +1,65 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+		xmlns:actipro="http://schemas.actiprosoftware.com/avaloniaui"
+		xmlns:vm="using:FrameSurgeon.ViewModels"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		x:Class="FrameSurgeon.Views.SettingsWindow"
+		x:DataType="vm:MainWindowViewModel"
+		Width="300" Height="160"
+		WindowStartupLocation="CenterOwner"
+		CanResize="False"
+        Title="Frame Surgeon 2 - Settings">
+	<Grid ColumnDefinitions="*" RowDefinitions="24,*,30">
+
+		<StackPanel
+			Background="LightBlue"
+			Grid.Column="0"
+			Grid.Row="0">
+			<TextBlock
+				Foreground="Black"
+				Padding="2"
+				FontSize="12"
+				FontWeight="Bold"
+				Text="Settings"
+				HorizontalAlignment="Center"
+				VerticalAlignment="Center">
+			</TextBlock>
+		</StackPanel>
+
+		<StackPanel
+			HorizontalAlignment="Center"
+			VerticalAlignment="Center"
+			Grid.Column="0" Grid.Row="1">
+			<CheckBox
+				ToolTip.Tip="{Binding ToolTips.OpenLastProjectSetting}"
+				Margin="0 0 0 16"
+				IsEnabled="{Binding !IsProcessing}"
+				FontSize="12"
+				Foreground="{actipro:ThemeResource DefaultForegroundBrushSecondary}"
+				IsChecked="{Binding OpenLastProjectEnabled}">
+				Open last project on startup
+			</CheckBox>
+			<CheckBox
+				ToolTip.Tip="{Binding ToolTips.OpenFolderAfterMakeSetting}"
+				IsEnabled="{Binding !IsProcessing}"
+				Margin="0 0 0 16"
+				FontSize="12"
+				Foreground="{actipro:ThemeResource DefaultForegroundBrushSecondary}"
+				IsChecked="{Binding OpenFolderAfterMakeEnabled}">
+				Open folder after Make
+			</CheckBox>
+		</StackPanel>
+
+		<StackPanel Grid.Column="0" Grid.Row="2">
+			<Button
+				Padding="1"
+				Width="60"
+				Click="CloseButton_Click"
+				>
+				OK
+			</Button>
+		</StackPanel>
+
+	</Grid>
+</Window>

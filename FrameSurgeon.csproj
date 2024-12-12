@@ -31,6 +31,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Views\SettingsWindow.axaml.cs">
+      <DependentUpon>SettingsWindow.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\DialogWindow.axaml.cs">
       <DependentUpon>DialogWindow.axaml</DependentUpon>
     </Compile>

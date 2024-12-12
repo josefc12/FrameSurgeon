@@ -39,6 +39,32 @@
 				Background="{actipro:ThemeResource Container5BackgroundBrush}">
 				+ Append
 			</Button>
+			<Button
+			Grid.Column="0"
+			ToolTip.Tip="{Binding ToolTips.SaveAsProjectButton}"
+			IsEnabled="{Binding !IsProcessing}"
+			Margin="4,4,4,2"
+			Padding="4"
+			Width="28"
+			FontSize="9"
+			HorizontalAlignment="Right"
+			Command="{Binding SaveAsProject}"
+			Background="{actipro:ThemeResource Container5BackgroundBrush}">
+				<Image Classes="uniform-on" Source="{SvgImage /Assets/Svg/floppy-fill.svg}"/>
+			</Button>
+			<Button
+			Grid.Column="0"
+			ToolTip.Tip="{Binding ToolTips.SaveProjectButton}"
+			IsEnabled="{Binding !IsProcessing}"
+			Margin="4,4,4,2"
+			Padding="4"
+			Width="28"
+			FontSize="9"
+			HorizontalAlignment="Right"
+			Command="{Binding SaveProject}"
+			Background="{actipro:ThemeResource Container5BackgroundBrush}">
+				<Image Classes="uniform-on" Source="{SvgImage /Assets/Svg/floppy.svg}"/>
+			</Button>
 		</StackPanel>
 
 

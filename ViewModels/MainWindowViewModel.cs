@@ -40,8 +40,11 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     public ReactiveCommand<Unit, Unit> ProcessMake { get; }
     public ReactiveCommand<Unit, Unit> OpenSettings { get; }
     public ReactiveCommand<Unit, Unit> PreviewResult { get; }
+    public ReactiveCommand<Unit, Unit> SaveAsProject { get; }
+    public ReactiveCommand<Unit, Unit> SaveProject { get; }
 
     public Interaction<DialogViewModel, MainWindowViewModel> ShowDialog { get;} = new Interaction<DialogViewModel, MainWindowViewModel>();
+    public Interaction<MainWindowViewModel, MainWindowViewModel> ShowSettings { get; } = new Interaction<MainWindowViewModel, MainWindowViewModel>();
 
     private readonly App _app;
     private ObservableCollection<string> _loadedFiles = new ObservableCollection<string>();
@@ -52,7 +55,11 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     private bool _isAnimatedGifModeSelected = false;
     private bool _frameNotLoaded = true;
     private bool _transparencyEnabled = false;
+    private bool _skipFramesEnabled = false;
+    private bool _annotateFramesEnabled = false;
     private bool _uniformScalingEnabled = true;
+    private bool _openLastProjectEnabled = false;
+    private bool _openFolderAfterMakeEnabled = false;
     private bool _gifLooping = true;
     private bool _isProcessing = false;
     private int? _flipbookResolutionHorizontal;
@@ -155,6 +162,32 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
         }
     }
 
+    public bool OpenLastProjectEnabled
+    {
+        get => _openLastProjectEnabled;
+        set
+        {
+            if (_openLastProjectEnabled != value)
+            {
+                _openLastProjectEnabled = value;
+                OnPropertyChanged(nameof(OpenLastProjectEnabled));
+            }
+        }
+    }
+
+    public bool OpenFolderAfterMakeEnabled
+    {
+        get => _openFolderAfterMakeEnabled;
+        set
+        {
+            if (_openFolderAfterMakeEnabled != value)
+            {
+                _openFolderAfterMakeEnabled = value;
+                OnPropertyChanged(nameof(OpenFolderAfterMakeEnabled));
+            }
+        }
+    }
+
     public bool GifLooping
     {
         get => _gifLooping;
@@ -202,6 +235,33 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
             {
                 _transparencyEnabled = value;
                 OnPropertyChanged(nameof(TransparencyEnabled));
+            }
+        }
+    }
+    public bool SkipFramesEnabled
+    {
+        get => _skipFramesEnabled;
+        set
+        {
+            if (_skipFramesEnabled != value)
+            {
+                _skipFramesEnabled = value;
+                OnPropertyChanged(nameof(SkipFramesEnabled));
+
+                SetFlipbookResolution(SkipFramesEnabled);
+
+            }
+        }
+    }
+    public bool AnnotateFramesEnabled
+    {
+        get => _annotateFramesEnabled;
+        set
+        {
+            if (_annotateFramesEnabled != value)
+            {
+                _annotateFramesEnabled = value;
+                OnPropertyChanged(nameof(AnnotateFramesEnabled));
             }
         }
     }
@@ -353,15 +413,15 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
         SetNewOutputPath = ReactiveCommand.Create(RunSetNewOutputPath);
         ProcessMake = ReactiveCommand.CreateFromTask(RunProcessMake);
         PreviewResult = ReactiveCommand.CreateFromTask(RunPreviewResult);
-
+        SaveAsProject = ReactiveCommand.Create(RunSaveAsProject);
+        SaveProject = ReactiveCommand.Create(RunSaveProject);
         OpenSettings = ReactiveCommand.Create(RunOpenSettings);
        
 
     }
     private async void RunOpenSettings()
     {
-        var progressBar = new DialogViewModel(DialogType.Info, "Processing, please wait...");
-        var progressTask = await ShowDialog.Handle(progressBar);
+        var progressTask = await ShowSettings.Handle(this);
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -416,7 +476,7 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
         }
 
         // Calculate new dimensions if Flipbook mode is selected.
-        SetFlipbookResolution();
+        SetFlipbookResolution(SkipFramesEnabled);
         SetFrameSize();
 
     }
@@ -434,15 +494,15 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
         {
             FrameNotLoaded = true;
         }
-        
+
         // Recalculate the dimensions of the flipbook
-        SetFlipbookResolution();
+        SetFlipbookResolution(SkipFramesEnabled);
         SetFrameSize();
 
     }
     private void RunResetFlipbookResolution()
     {
-        SetFlipbookResolution();
+        SetFlipbookResolution(SkipFramesEnabled);
     }
     private void RunResetFrameSize()
     {
@@ -479,30 +539,8 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
 
                 Dispatcher.UIThread.Post(() => IsProcessing = true);
 
-                GlobalSettings globalSettings = new GlobalSettings()
-                {
-                    ExportMode = ValueConverter.GetExportModeAsEnumValue(SelectedExportMode),
-                    LoadedFiles = LoadedFiles.ToList(),
-                    OutputPath = OutputPath,
-                    SelectedExtension = SelectedExtension,
-                    TransparencyEnabled = TransparencyEnabled,
-                    FrameSizeHeight = FrameSizeHeight ?? 0,
-                    FrameSizeWidth = FrameSizeWidth ?? 0,
-                };
 
-                FlipbookSettings flipbookSettings = new FlipbookSettings()
-                {
-                    hResolution = FlipbookResolutionHorizontal ?? 0,
-                    vResolution = FlipbookResolutionVertical ?? 0,
-                };
-
-                GifSettings gifSettings = new GifSettings()
-                {
-                    Fps = GifFps ?? 30,
-                    Looping = GifLooping
-                };
-
-                Processor processor = new Processor(globalSettings, flipbookSettings, gifSettings, this);
+                Processor processor = new Processor(this);
                 result = processor.Process();
 
                 Dispatcher.UIThread.Post(() => IsProcessing = false);
@@ -545,30 +583,8 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     private async Task RunPreviewResult()
     {
 
-        GlobalSettings globalSettings = new GlobalSettings()
-        {
-            ExportMode = ValueConverter.GetExportModeAsEnumValue(SelectedExportMode),
-            LoadedFiles = LoadedFiles.ToList(),
-            OutputPath = OutputPath,
-            SelectedExtension = SelectedExtension,
-            TransparencyEnabled = TransparencyEnabled,
-            FrameSizeHeight = FrameSizeHeight ?? 0,
-            FrameSizeWidth = FrameSizeWidth ?? 0,
-        };
 
-        FlipbookSettings flipbookSettings = new FlipbookSettings()
-        {
-            hResolution = FlipbookResolutionHorizontal ?? 0,
-            vResolution = FlipbookResolutionVertical ?? 0,
-        };
-
-        GifSettings gifSettings = new GifSettings()
-        {
-            Fps = GifFps ?? 30,
-            Looping = GifLooping
-        };
-
-        Processor processor = new Processor(globalSettings, flipbookSettings, gifSettings, this);
+        Processor processor = new Processor(this);
         
         var previewResult = processor.Preview();
 
@@ -617,9 +633,26 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
 
     }
 
-    private void SetFlipbookResolution()
+    private void RunSaveAsProject()
     {
-        FlipbookResolution fResolution = Calculator.CalculateFlipbookDimensions(LoadedFiles.Count);
+        Debug.WriteLine("RunSaveAsProject ran");
+    }
+
+    private void RunSaveProject()
+    {
+        Debug.WriteLine("RunSaveProject ran");
+    }
+
+    private void SetFlipbookResolution(bool isHalved)
+    {
+
+        int frameCount = LoadedFiles.Count;
+        if (isHalved)
+        {
+            frameCount = frameCount / 2;
+        }
+
+        FlipbookResolution fResolution = Calculator.CalculateFlipbookDimensions(frameCount);
         FlipbookResolutionHorizontal = fResolution.HorizontalAmount;
         FlipbookResolutionVertical = fResolution.VerticalAmount;
     }

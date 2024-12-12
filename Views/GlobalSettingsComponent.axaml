@@ -39,7 +39,25 @@
 					FontSize="12"
 					Foreground="{actipro:ThemeResource DefaultForegroundBrushSecondary}"
 					IsChecked="{Binding TransparencyEnabled}">
-					Transparency
+					Keep transparency
+				</CheckBox>
+
+				<CheckBox
+					ToolTip.Tip="{Binding ToolTips.SkipFramesSetting}"
+					IsEnabled="{Binding !IsProcessing}"
+					FontSize="12"
+					Foreground="{actipro:ThemeResource DefaultForegroundBrushSecondary}"
+					IsChecked="{Binding SkipFramesEnabled}">
+					Skip every other frame
+				</CheckBox>
+
+				<CheckBox
+					ToolTip.Tip="{Binding ToolTips.AnnotateFramesSetting}"
+					IsEnabled="{Binding !IsProcessing}"
+					FontSize="12"
+					Foreground="{actipro:ThemeResource DefaultForegroundBrushSecondary}"
+					IsChecked="{Binding AnnotateFramesEnabled}">
+					Annotate frames
 				</CheckBox>
 
 				<!-- SIZE settings card -->

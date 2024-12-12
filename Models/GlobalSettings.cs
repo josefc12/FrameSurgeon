@@ -14,6 +14,7 @@ namespace FrameSurgeon.Models
         public required string OutputPath { get; set; }
         public required string SelectedExtension { get; set; }
         public required bool TransparencyEnabled { get; set; }
+        public required bool SkipFramesEnabled { get; set; }
         public required int FrameSizeWidth { get; set; }
         public required int FrameSizeHeight { get; set; }
     }
