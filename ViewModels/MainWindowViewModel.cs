@@ -25,6 +25,7 @@ using Microsoft.VisualBasic;
 using Avalonia;
 using Avalonia.Media;
 using System.Linq.Expressions;
+using System.Runtime.InteropServices;
 using DynamicData;
 
 namespace FrameSurgeon.ViewModels;
@@ -40,6 +41,7 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     public ReactiveCommand<Unit, Unit> ProcessMake { get; }
     public ReactiveCommand<Unit, Unit> OpenSettings { get; }
     public ReactiveCommand<Unit, Unit> PreviewResult { get; }
+    public ReactiveCommand<Unit, Unit> OpenProject { get; }
     public ReactiveCommand<Unit, Unit> SaveAsProject { get; }
     public ReactiveCommand<Unit, Unit> SaveProject { get; }
 
@@ -70,6 +72,7 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     private int? _maxProgress = 100;
     private double? _currentProgress = 0;
     private string _outputPath;
+    private string _savePath;
 
     public bool isAdding { get; } = false;
 
@@ -399,9 +402,34 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
             }
         }
     }
+    public string SavePath
+    {
+        get => _savePath;
+        set
+        {
+            if (_savePath != value)
+            {
+                _savePath = value;
+                OnPropertyChanged(nameof(SavePath));
+            }
+        }
+    }
 
     public MainWindowViewModel(App app)
     {
+        
+        //LoadUser Settings
+        var userSettings = Saviour.LoadUserSettings();
+        OpenFolderAfterMakeEnabled = userSettings.OpenFolderAfterMakeEnabled;
+        OpenLastProjectEnabled = userSettings.OpenLastProjectEnabled;
+        
+        //Load last project settings:
+        if (OpenLastProjectEnabled)
+        {
+            var lastProjectSettings = Saviour.LoadProjectStartupFile();
+            
+            LoadSettings(lastProjectSettings);
+        }
         _app = app;
         SelectedExtension = _convertedExtensions[0];
         
@@ -413,8 +441,9 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
         SetNewOutputPath = ReactiveCommand.Create(RunSetNewOutputPath);
         ProcessMake = ReactiveCommand.CreateFromTask(RunProcessMake);
         PreviewResult = ReactiveCommand.CreateFromTask(RunPreviewResult);
-        SaveAsProject = ReactiveCommand.Create(RunSaveAsProject);
-        SaveProject = ReactiveCommand.Create(RunSaveProject);
+        OpenProject = ReactiveCommand.CreateFromTask(RunOpenProject);
+        SaveAsProject = ReactiveCommand.CreateFromTask(RunSaveAsProject);
+        SaveProject = ReactiveCommand.CreateFromTask(RunSaveProject);
         OpenSettings = ReactiveCommand.Create(RunOpenSettings);
        
 
@@ -433,7 +462,7 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     // COMMAND FUNCTIONS
     private async void RunLoadNewImages(bool isAdding)
     {
-        Console.WriteLine(isAdding);
+        
         // Load paths
         try
         {
@@ -443,7 +472,7 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
             {
                 LoadedFiles.Clear();
                 LoadedFilesNames.Clear();
-                Console.WriteLine("Cleared");
+                
             }
             foreach (var filePath in filePaths)
             {
@@ -462,11 +491,11 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
 
             foreach (var aFile in LoadedFiles)
             {
-                Console.WriteLine(aFile + "File in LoadedFiles");
+                
             }
             foreach (var aFile in LoadedFilesNames)
             {
-                Console.WriteLine(aFile.Name + "File in LoadedFilesNames");
+                
             }
 
         }
@@ -538,8 +567,7 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
             {
 
                 Dispatcher.UIThread.Post(() => IsProcessing = true);
-
-
+                
                 Processor processor = new Processor(this);
                 result = processor.Process();
 
@@ -566,6 +594,30 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
                 var failure = new DialogViewModel(DialogType.Error, "Fatal error");
                 await ShowDialog.Handle(failure);
 
+            }
+
+            if (OpenFolderAfterMakeEnabled)
+            {
+                // Opens the destination folder if the setting's enabled.
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    // Windows: Use Explorer
+                    Process.Start("explorer.exe", Path.GetDirectoryName(OutputPath));
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    // macOS: Use Finder
+                    Process.Start("open", Path.GetDirectoryName(OutputPath));
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    // Linux: Use xdg-open (common on many distros)
+                    Process.Start("xdg-open", Path.GetDirectoryName(OutputPath));
+                }
+                else
+                {
+                    throw new PlatformNotSupportedException("Unsupported operating system.");
+                }
             }
         }
         catch (Exception ex)
@@ -611,7 +663,6 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Exception: {ex.Message}\n{ex.StackTrace}");
                     var failure = new DialogViewModel(DialogType.Error, ex.Message);
                     await ShowDialog.Handle(failure);
                 }
@@ -632,15 +683,57 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
         }
 
     }
-
-    private void RunSaveAsProject()
+    
+    private async Task RunOpenProject()
     {
-        Debug.WriteLine("RunSaveAsProject ran");
+        // Load paths
+        try
+        {
+            ProjectSettings? loadedSettings = await InputOutput.DoOpenProjectAsync();
+            if (loadedSettings != null)
+            {
+                
+                LoadSettings(loadedSettings);
+                Console.WriteLine(SavePath);
+            }
+
+        }
+        catch (Exception e)
+        {
+            throw new Exception($"{e.Message}");
+        }
+    }
+    
+    private async Task RunSaveAsProject()
+    {
+        // Load paths
+        try
+        {
+            var savePath = await InputOutput.DoOpenSaveFileAsync();
+            if (savePath == "") return;
+            
+            Console.WriteLine(SavePath);
+            SavePath = savePath;
+            ProjectSettings projectSettings = new ProjectSettings(this);
+            Saviour.SaveAsProject(SavePath, projectSettings);
+
+        }
+        catch (Exception e)
+        {
+            throw new Exception($"{e.Message}");
+        }
     }
 
-    private void RunSaveProject()
+    private async Task RunSaveProject()
     {
-        Debug.WriteLine("RunSaveProject ran");
+        if (SavePath == "")
+        {
+            await RunSaveAsProject();
+        }
+        else
+        {
+            Saviour.SaveAsProject(SavePath, new ProjectSettings(this));
+        }
     }
 
     private void SetFlipbookResolution(bool isHalved)
@@ -787,5 +880,34 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
         window.Show();
 
         return Task.CompletedTask;
+    }
+
+    private void LoadSettings(ProjectSettings settings)
+    {
+        // This could be further optimized.
+        LoadedFiles = settings.LoadedFiles;
+        LoadedFilesNames = settings.LoadedFilesNames;
+        SelectedExportMode = settings.SelectedExportMode;
+        ConvertedExtensions = settings.ConvertedExtensions;
+        IsFlipBookModeSelected = settings.IsFlipBookModeSelected;
+        IsAnimatedGifModeSelected = settings.IsAnimatedGifModeSelected;
+        FrameNotLoaded = settings.FrameNotLoaded;
+        TransparencyEnabled = settings.TransparencyEnabled;
+        SkipFramesEnabled = settings.SkipFramesEnabled;
+        AnnotateFramesEnabled = settings.AnnotateFramesEnabled;
+        UniformScalingEnabled = settings.UniformScalingEnabled;
+        OpenLastProjectEnabled = settings.OpenLastProjectEnabled;
+        OpenFolderAfterMakeEnabled = settings.OpenFolderAfterMakeEnabled;
+        GifLooping = settings.GifLooping;
+        IsProcessing = settings.IsProcessing;
+        FlipbookResolutionHorizontal = settings.FlipbookResolutionHorizontal;
+        FlipbookResolutionVertical = settings.FlipbookResolutionVertical;
+        FrameSizeWidth = settings.FrameSizeWidth;
+        FrameSizeHeight = settings.FrameSizeHeight;
+        GifFps = settings.GifFps;
+        MaxProgress = settings.MaxProgress;
+        CurrentProgress = settings.CurrentProgress;
+        OutputPath = settings.OutputPath;
+        SavePath = settings.SavePath;  
     }
 }

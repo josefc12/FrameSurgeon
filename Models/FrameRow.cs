@@ -12,6 +12,11 @@ namespace FrameSurgeon.Models
         public string Name { get; set; }
         public string AbsolutePath { get; set; }
 
+
+        public FrameRow()
+        {
+        }
+
         public FrameRow(string name, string path)
         {
             this.Name = name;

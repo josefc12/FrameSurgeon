@@ -15,8 +15,9 @@ namespace FrameSurgeon.Models
         public static string MakeButton { get; } = "Make the result and save it at the selected destination under the selected format.";
         public static string PreviewButton { get; } = "Preview the result.";
         public static string AppendButton { get; } = "Append new frames at the end of the list.";
-        public static string SaveAsProjectButton { get; } = "Create a new save file.";
-        public static string SaveProjectButton { get; } = "Save current project.";
+        public static string OpenProjectButton { get; } = "Open saved project.";
+        public static string SaveAsProjectButton { get; } = "Save As.";
+        public static string SaveProjectButton { get; } = "Save.";
 
         // SETTINGS
         public static string HorSetting { get; } = "Amount of frames on the horizontal axis.";

@@ -8,6 +8,8 @@ using Avalonia.ReactiveUI;
 using Avalonia.Input;
 using System.Reactive;
 using System.Diagnostics;
+using FrameSurgeon.Models;
+using FrameSurgeon.Services;
 
 namespace FrameSurgeon.Views;
 
@@ -65,6 +67,15 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         // Close all preview windows before the main window closes
         if (App.Current is App app)
         {
+            //Save startup file if option enabled
+            var context = this.DataContext as MainWindowViewModel;
+
+            if (context.OpenLastProjectEnabled)
+            {
+                var startupFileSettings = new ProjectSettings(context);
+                Saviour.SaveProjectStartupFile(startupFileSettings);
+            }
+            
             foreach (var previewWindow in app.PreviewWindows.ToList())
             {
                 previewWindow.Close();

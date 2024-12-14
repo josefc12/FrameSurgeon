@@ -7,8 +7,11 @@ using ImageMagick;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using FrameSurgeon.Models;
+using FrameSurgeon.Services;
 
 namespace FrameSurgeon.Classes
 {
@@ -38,6 +41,29 @@ namespace FrameSurgeon.Classes
 
             return files?.Select(file => file.Path.LocalPath) ?? Enumerable.Empty<string>();
         }
+        
+        public static async Task<string> DoOpenSaveFileAsync()
+        {
+
+            if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop ||
+                desktop.MainWindow?.StorageProvider is not { } provider)
+                throw new NullReferenceException("Missing StorageProvider instance.");
+
+            var fileToSave = await provider.SaveFilePickerAsync(new FilePickerSaveOptions()
+            {
+                Title = "Save project file"
+                
+            });
+
+            if (fileToSave != null)
+            {
+                var file = fileToSave?.Path.AbsolutePath;
+                string finalFile = RemoveExtension(file) + ".json";
+                return finalFile;
+            }
+            return "";
+            
+        }
 
         public static async Task<IStorageFile?> DoOpenOutputPickerAsync()
         {
@@ -50,6 +76,40 @@ namespace FrameSurgeon.Classes
             {
                 Title = "Save File"
             });
+        }
+        
+        public static async Task<ProjectSettings?> DoOpenProjectAsync()
+        {
+
+            if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop ||
+                desktop.MainWindow?.StorageProvider is not { } provider)
+                throw new NullReferenceException("Missing StorageProvider instance.");
+
+            var fileToOpen = await provider.OpenFilePickerAsync(new FilePickerOpenOptions()
+            {
+                Title = "Save project file",
+                FileTypeFilter = new[] {
+                    new FilePickerFileType("JSON File")
+                    {
+                        Patterns = new[] { "*.json" },
+                    },
+                    
+                },
+                AllowMultiple = false
+            });
+            
+            
+            var file = fileToOpen?.Select(s => s.Path.LocalPath) ?? Enumerable.Empty<string>();
+            
+            string finalFile = "";
+            
+            if (file.Any())
+            {
+                finalFile = file.First();
+                return Saviour.LoadProjectFile(finalFile);
+            }
+            
+            return null;
         }
 
         public static void OutputImage(string extension, string path, MagickImage? image = null, MagickImageCollection? collection = null, int? loopPosition = null)

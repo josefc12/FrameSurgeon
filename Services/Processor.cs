@@ -454,7 +454,7 @@ namespace FrameSurgeon.Services
         {
             // Create a drawables object for drawing text
             var drawables = new Drawables()
-                .Font("Arial",FontStyleType.Normal,FontWeight.Bold,FontStretch.Normal)    
+                .Font("Noto Sans",FontStyleType.Normal,FontWeight.Bold,FontStretch.Normal)    
                 .FontPointSize(24)           
                 .FillColor(MagickColors.White)
                 .StrokeColor(MagickColors.Black)

@@ -40,6 +40,19 @@
 				+ Append
 			</Button>
 			<Button
+				Grid.Column="0"
+				ToolTip.Tip="{Binding ToolTips.OpenProjectButton}"
+				IsEnabled="{Binding !IsProcessing}"
+				Margin="4,4,4,2"
+				Padding="4"
+				Width="28"
+				FontSize="9"
+				HorizontalAlignment="Right"
+				Command="{Binding OpenProject}"
+				Background="{actipro:ThemeResource Container5BackgroundBrush}">
+				<Image Classes="uniform-on" Source="{SvgImage /Assets/Svg/folder2-open.svg}"/>
+			</Button>
+			<Button
 			Grid.Column="0"
 			ToolTip.Tip="{Binding ToolTips.SaveAsProjectButton}"
 			IsEnabled="{Binding !IsProcessing}"
