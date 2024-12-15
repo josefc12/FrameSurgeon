@@ -11,8 +11,8 @@
 		MinWidth="584" MinHeight="530"
         x:Class="FrameSurgeon.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/avalonia-logo.ico"
-        Title="Frame Surgeon 2"
+        Icon="/Assets/FS_ICON.ico"
+        Title="{Binding Title}"
 		WindowStartupLocation="CenterScreen">
         
 

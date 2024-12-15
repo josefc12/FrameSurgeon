@@ -10,7 +10,7 @@
 		WindowStartupLocation="CenterOwner"
 		CanResize="False"
         Title="Frame Surgeon 2 - Settings">
-	<Grid ColumnDefinitions="*" RowDefinitions="24,*,30">
+	<Grid ColumnDefinitions="*" RowDefinitions="38,*,30">
 
 		<StackPanel
 			Background="LightBlue"
@@ -22,6 +22,15 @@
 				FontSize="12"
 				FontWeight="Bold"
 				Text="Settings"
+				HorizontalAlignment="Center"
+				VerticalAlignment="Center">
+			</TextBlock>
+			<TextBlock
+				Foreground="Black"
+				Padding="2"
+				FontSize="9"
+				FontWeight="Bold"
+				Text="Version 2.0.0 | ©Josef Čermák | josefcermak98@gmail.com"
 				HorizontalAlignment="Center"
 				VerticalAlignment="Center">
 			</TextBlock>

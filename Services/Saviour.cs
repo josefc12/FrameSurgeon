@@ -28,8 +28,6 @@ public static class Saviour
         
         string filePath = System.IO.Path.Combine(appLocalFolder, "UserSettings.json");
         
-        Console.WriteLine(userSettings);
-        
         string jsonFile = JsonSerializer.Serialize(userSettings, new JsonSerializerOptions { WriteIndented = true });
         File.WriteAllText(filePath, jsonFile);
     }
@@ -47,8 +45,6 @@ public static class Saviour
         }
         
         string filePath = System.IO.Path.Combine(appLocalFolder, "StartupProjectSettings.json");
-        
-        Console.WriteLine(projectSettings);
         
         string jsonFile = JsonSerializer.Serialize(projectSettings, new JsonSerializerOptions { WriteIndented = true });
         File.WriteAllText(filePath, jsonFile);
@@ -79,18 +75,15 @@ public static class Saviour
             
             if (userSettings != null)
             {
-                Console.WriteLine($"Settings loaded: OpenFolderAfterMakeEnabled={userSettings.OpenFolderAfterMakeEnabled}, OpenLastProjectEnabled={userSettings.OpenLastProjectEnabled}");
                 return userSettings;
             }
             else
             {
-                Console.WriteLine("Error: Failed to deserialize the settings.");
                 return null;
             }
         }
         else
         {
-            Console.WriteLine("Settings file not found.");
             return null;
         }
     }
@@ -113,18 +106,15 @@ public static class Saviour
             
             if (projectSettings != null)
             {
-                Console.WriteLine($"Settings loaded: OpenFolderAfterMakeEnabled={projectSettings.OpenFolderAfterMakeEnabled}, OpenLastProjectEnabled={projectSettings.OpenLastProjectEnabled}");
                 return projectSettings;
             }
             else
             {
-                Console.WriteLine("Error: Failed to deserialize the settings.");
                 return null;
             }
         }
         else
         {
-            Console.WriteLine("Settings file not found.");
             return null;
         }
     }
@@ -143,18 +133,15 @@ public static class Saviour
             
             if (projectSettings != null)
             {
-                Console.WriteLine($"Settings loaded: OpenFolderAfterMakeEnabled={projectSettings.OpenFolderAfterMakeEnabled}, OpenLastProjectEnabled={projectSettings.OpenLastProjectEnabled}");
                 return projectSettings;
             }
             else
             {
-                Console.WriteLine("Error: Failed to deserialize the settings.");
                 return null;
             }
         }
         else
         {
-            Console.WriteLine("Settings file not found.");
             return null;
         }
     }

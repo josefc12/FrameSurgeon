@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using FrameSurgeon.Classes;
 using FrameSurgeon.Enums;
 using FrameSurgeon.ViewModels;
@@ -32,6 +33,7 @@ public class ProjectSettings
     public double? CurrentProgress {get;set;}
     public string OutputPath {get;set;}
     public string SavePath {get;set;}
+    public string Title {get;set;}
 
     public ProjectSettings()
     {
@@ -63,6 +65,7 @@ public class ProjectSettings
         CurrentProgress = context.CurrentProgress;
         OutputPath = context.OutputPath;
         SavePath = context.SavePath;
+        Title = Path.GetFileName(SavePath);
     }
     
 }

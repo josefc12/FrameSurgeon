@@ -10,10 +10,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using FrameSurgeon.Classes;
 using FrameSurgeon.Models;
 using FrameSurgeon.Services;
 
-namespace FrameSurgeon.Classes
+namespace FrameSurgeon.Services
 {
     public class InputOutput : ViewModelBase
     {

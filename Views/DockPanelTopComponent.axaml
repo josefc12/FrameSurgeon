@@ -78,6 +78,17 @@
 			Background="{actipro:ThemeResource Container5BackgroundBrush}">
 				<Image Classes="uniform-on" Source="{SvgImage /Assets/Svg/floppy.svg}"/>
 			</Button>
+			<TextBlock
+				Opacity="{Binding ThumbOpacity}"
+				HorizontalAlignment="Center"
+				VerticalAlignment="Center">
+				<TextBlock.Transitions>
+					<Transitions>
+						<DoubleTransition Property="Opacity" Duration="0:0:1"/>
+					</Transitions>
+				</TextBlock.Transitions>
+				<Image Classes="uniform-on" Source="{SvgImage /Assets/Svg/hand-thumbs-up-fill.svg}"/>
+			</TextBlock>
 		</StackPanel>
 
 

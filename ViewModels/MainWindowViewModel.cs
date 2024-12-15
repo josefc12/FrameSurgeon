@@ -70,10 +70,12 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     private int? _frameSizeHeight;
     private int? _gifFps = 30;
     private int? _maxProgress = 100;
+    private double _thumbOpacity = 0;
     private double? _currentProgress = 0;
     private string _outputPath;
     private string _savePath;
-
+    private string _title = "Frame Surgeon 2";
+    
     public bool isAdding { get; } = false;
 
     public ToolTipInformation ToolTips { get; } = new ToolTipInformation();
@@ -377,6 +379,18 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
             }
         }
     }
+    public double ThumbOpacity
+    {
+        get => _thumbOpacity;
+        set
+        {
+            if (_thumbOpacity != value)
+            {
+                _thumbOpacity = value;
+                OnPropertyChanged(nameof(ThumbOpacity));
+            }
+        }
+    }
     public double? CurrentProgress
     {
         get => _currentProgress;
@@ -414,10 +428,22 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
             }
         }
     }
+    
+    public string Title
+    {
+        get => _title;
+        set
+        {
+            if (_title != value)
+            {
+                _title = "Frame Surgeon 2 - " + value;
+                OnPropertyChanged(nameof(Title));
+            }
+        }
+    }
 
     public MainWindowViewModel(App app)
     {
-        
         //LoadUser Settings
         var userSettings = Saviour.LoadUserSettings();
         OpenFolderAfterMakeEnabled = userSettings.OpenFolderAfterMakeEnabled;
@@ -694,7 +720,6 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
             {
                 
                 LoadSettings(loadedSettings);
-                Console.WriteLine(SavePath);
             }
 
         }
@@ -712,10 +737,11 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
             var savePath = await InputOutput.DoOpenSaveFileAsync();
             if (savePath == "") return;
             
-            Console.WriteLine(SavePath);
             SavePath = savePath;
+            Title = Path.GetFileName(SavePath);
             ProjectSettings projectSettings = new ProjectSettings(this);
             Saviour.SaveAsProject(SavePath, projectSettings);
+            
 
         }
         catch (Exception e)
@@ -726,7 +752,7 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
 
     private async Task RunSaveProject()
     {
-        if (SavePath == "")
+        if (SavePath == "" || SavePath == null)
         {
             await RunSaveAsProject();
         }
@@ -734,6 +760,14 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
         {
             Saviour.SaveAsProject(SavePath, new ProjectSettings(this));
         }
+
+        ThumbOpacity = 1.0;
+        
+        // Wait for a while before fading out
+        await Task.Delay(2000);
+
+        // Trigger fade-out animation
+        ThumbOpacity = 0;
     }
 
     private void SetFlipbookResolution(bool isHalved)
@@ -908,6 +942,7 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
         MaxProgress = settings.MaxProgress;
         CurrentProgress = settings.CurrentProgress;
         OutputPath = settings.OutputPath;
-        SavePath = settings.SavePath;  
+        SavePath = settings.SavePath;
+        Title = settings.Title;  
     }
 }
