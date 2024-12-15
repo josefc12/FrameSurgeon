@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="33.728577mm"
+   height="33.728577mm"
+   viewBox="0 0 33.728577 33.728577"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   sodipodi:docname="fsicon.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#999999"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="2.0586053"
+     inkscape:cx="-74.807929"
+     inkscape:cy="67.27856"
+     inkscape:window-width="1920"
+     inkscape:window-height="996"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2">
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient4891">
+      <stop
+         style="stop-color:#226770;stop-opacity:1;"
+         offset="0"
+         id="stop4887" />
+      <stop
+         style="stop-color:#45cdbe;stop-opacity:1;"
+         offset="1"
+         id="stop4889" />
+    </linearGradient>
+    <rect
+       x="187.68195"
+       y="256.09052"
+       width="127.50291"
+       height="113.50291"
+       id="rect2843" />
+    <mask
+       maskUnits="userSpaceOnUse"
+       id="mask2743">
+      <path
+         id="path2745"
+         style="fill:#7fc7bf;stroke-width:0.264583;stroke-opacity:0.120513"
+         d="m 53.361685,64.053117 h 26.326809 c 2.052109,0 3.704167,1.652058 3.704167,3.704166 v 26.326812 c 0,2.052108 -1.652058,3.704167 -3.704167,3.704167 H 53.361685 c -2.052111,0 -3.704169,-1.652059 -3.704169,-3.704167 V 67.757283 c 0,-2.052108 1.652058,-3.704166 3.704169,-3.704166 z" />
+    </mask>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4891"
+       id="linearGradient4893"
+       x1="49.660801"
+       y1="64.056396"
+       x2="83.389374"
+       y2="97.784973"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-49.660801,-64.056396)">
+    <rect
+       style="font-variation-settings:'wght' 700;fill:url(#linearGradient4893);fill-opacity:1;stroke:none;stroke-width:0.286842;stroke-opacity:1"
+       id="rect4884"
+       width="33.728577"
+       height="33.728577"
+       x="49.660801"
+       y="64.056396"
+       rx="2.0093262"
+       ry="2.0093262"
+       inkscape:export-filename="FS_ICON.png"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96" />
+    <g
+       aria-label="F"
+       transform="matrix(0.26458333,0,0,0.26458333,-8.5034092,2.3992968)"
+       id="text2841"
+       style="font-size:96px;font-family:'Albert Sans';-inkscape-font-specification:'Albert Sans, @wght=700';font-variation-settings:'wght' 700;white-space:pre;shape-inside:url(#rect2843);fill:#a3fff4;fill-opacity:1"
+       inkscape:label="text2841">
+      <path
+         d="m 258.98293,256.43519 c 14.68975,-14.68975 47.63358,-14.68975 62.32333,0 3.37387,3.37387 3.37387,10.94023 0,14.3141 -10.65903,10.65902 -34.56338,-10.65903 -45.22241,0 -5.31459,5.31458 -5.31459,17.23328 0,22.54787 7.97187,7.97187 25.84993,-7.97188 33.8218,0 3.25444,3.25444 3.25444,10.55296 0,13.8074 -7.97187,7.97188 -25.84993,-7.97187 -33.8218,0 -8.95717,8.95717 8.95717,29.04486 0,38.00203 -4.03072,4.03072 -13.07019,4.03072 -17.10092,0 -20.90004,-20.90005 -20.90004,-67.77135 0,-88.6714 z"
+         id="path2847"
+         sodipodi:nodetypes="sssssssssss"
+         style="fill:#a3fff4;fill-opacity:1;stroke-width:1.31951" />
+    </g>
+  </g>
+</svg>
