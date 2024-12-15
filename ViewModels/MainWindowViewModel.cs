@@ -446,15 +446,22 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
     {
         //LoadUser Settings
         var userSettings = Saviour.LoadUserSettings();
-        OpenFolderAfterMakeEnabled = userSettings.OpenFolderAfterMakeEnabled;
-        OpenLastProjectEnabled = userSettings.OpenLastProjectEnabled;
+        if (userSettings != null)
+        {
+            OpenFolderAfterMakeEnabled = userSettings.OpenFolderAfterMakeEnabled;
+            OpenLastProjectEnabled = userSettings.OpenLastProjectEnabled;
+        }
+
         
         //Load last project settings:
         if (OpenLastProjectEnabled)
         {
             var lastProjectSettings = Saviour.LoadProjectStartupFile();
-            
-            LoadSettings(lastProjectSettings);
+            if (lastProjectSettings != null)
+            {
+                LoadSettings(lastProjectSettings);
+            }
+           
         }
         _app = app;
         SelectedExtension = _convertedExtensions[0];
@@ -614,6 +621,31 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
                 // Show success message
                 var success = new DialogViewModel(DialogType.Success, result.Message);
                 await ShowDialog.Handle(success);
+
+
+                if (OpenFolderAfterMakeEnabled)
+                {
+                    // Opens the destination folder if the setting's enabled.
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    {
+                        // Windows: Use Explorer
+                        Process.Start("explorer.exe", Path.GetDirectoryName(OutputPath));
+                    }
+                    else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                    {
+                        // macOS: Use Finder
+                        Process.Start("open", Path.GetDirectoryName(OutputPath));
+                    }
+                    else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                    {
+                        // Linux: Use xdg-open (common on many distros)
+                        Process.Start("xdg-open", Path.GetDirectoryName(OutputPath));
+                    }
+                    else
+                    {
+                        throw new PlatformNotSupportedException("Unsupported operating system.");
+                    }
+                }
             }
             else
             {
@@ -622,29 +654,6 @@ public class MainWindowViewModel : ViewModelBase, INotifyPropertyChanged
 
             }
 
-            if (OpenFolderAfterMakeEnabled)
-            {
-                // Opens the destination folder if the setting's enabled.
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    // Windows: Use Explorer
-                    Process.Start("explorer.exe", Path.GetDirectoryName(OutputPath));
-                }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                {
-                    // macOS: Use Finder
-                    Process.Start("open", Path.GetDirectoryName(OutputPath));
-                }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                {
-                    // Linux: Use xdg-open (common on many distros)
-                    Process.Start("xdg-open", Path.GetDirectoryName(OutputPath));
-                }
-                else
-                {
-                    throw new PlatformNotSupportedException("Unsupported operating system.");
-                }
-            }
         }
         catch (Exception ex)
         {
